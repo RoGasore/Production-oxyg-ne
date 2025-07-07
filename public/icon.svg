@@ -1,7 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <title>OxyTrack Logo</title>
-    <path d="M8 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2z" fill="#3066BE" stroke="#3066BE"/>
-    <line x1="12" y1="15" x2="12" y2="3" stroke="#E54A07" stroke-width="2"/>
-    <path d="M12 15a2 2 0 1 0 4 0" stroke="#E54A07" stroke-width="2"/>
-    <path d="M10 3h4" stroke="#F0F4F8" stroke-width="1.5"/>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+>
+  <title>Logo OxyTrack</title>
+  <path
+    d="M8 3h8c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2z"
+    fill="hsl(217, 59%, 46%)"
+    stroke="hsl(217, 59%, 46%)"
+  />
+  <line
+    x1="12"
+    y1="15"
+    x2="12"
+    y2="3"
+    stroke="hsl(19, 95%, 46%)"
+    strokeWidth="2"
+  />
+  <path
+    d="M12 15a2 2 0 1 0 4 0"
+    stroke="hsl(19, 95%, 46%)"
+    strokeWidth="2"
+  />
+  <path d="M10 3h4" stroke="hsl(0, 0%, 100%)" strokeWidth="1.5" />
 </svg>

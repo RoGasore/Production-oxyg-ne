@@ -1,48 +1,38 @@
 const CACHE_NAME = 'oxytrack-cache-v1';
+const urlsToCache = [
+  '/',
+  '/manifest.json',
+  '/icon.svg'
+];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        '/',
-        '/manifest.json',
-        '/icon.svg',
-      ]);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
-    return;
-  }
-  
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cachedResponse = await cache.match(event.request);
-      
-      const fetchedResponse = fetch(event.request).then((networkResponse) => {
-        if (networkResponse.ok) {
-            cache.put(event.request, networkResponse.clone());
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
         }
-        return networkResponse;
-      }).catch(() => {
-        // fetch failed, probably offline
-        return cachedResponse;
-      });
-
-      return cachedResponse || fetchedResponse;
-    })
+        return fetch(event.request);
+      })
   );
 });
 
-
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
             return caches.delete(cacheName);
           }
