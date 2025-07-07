@@ -33,17 +33,15 @@ export default function PwaInstaller() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(registration => {
-          console.log('SW registered: ', registration);
-        }).catch(registrationError => {
-          console.log('SW registration failed: ', registrationError);
-          toast({
-            variant: "destructive",
-            title: "Erreur du Service Worker",
-            description: "La fonctionnalité hors ligne ne sera pas disponible.",
-          })
-        });
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        console.log('SW registered: ', registration);
+      }).catch(registrationError => {
+        console.log('SW registration failed: ', registrationError);
+        toast({
+          variant: "destructive",
+          title: "Erreur du Service Worker",
+          description: "La fonctionnalité hors ligne ne sera pas disponible.",
+        })
       });
     }
   }, [toast]);
