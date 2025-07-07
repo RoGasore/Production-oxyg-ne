@@ -1,0 +1,17 @@
+{
+  "name": "OxyTrack",
+  "short_name": "OxyTrack",
+  "description": "Application for monitoring oxygen production.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#3066BE",
+  "background_color": "#F0F4F8",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
