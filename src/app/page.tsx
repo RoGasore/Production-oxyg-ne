@@ -17,44 +17,44 @@ export default function Home() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Today's Production
+                Production du jour
               </CardTitle>
               <Zap className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">1,250 m³</div>
               <p className="text-xs text-muted-foreground">
-                +5.2% from yesterday
+                +5.2% par rapport à hier
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Purity Level
+                Niveau de pureté
               </CardTitle>
               <Percent className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">99.5%</div>
               <p className="text-xs text-muted-foreground">
-                Within optimal range
+                Dans la plage optimale
               </p>
             </CardContent>
           </Card>
         </div>
         <div className="flex items-center">
-            <h2 className="text-xl font-semibold">Production Log</h2>
+            <h2 className="text-xl font-semibold">Journal de production</h2>
             <Button size="sm" className="ml-auto gap-1">
                 <PlusCircle className="h-4 w-4" />
-                New Entry
+                Nouvelle entrée
             </Button>
         </div>
         <Card>
             <CardContent className="flex min-h-[200px] items-center justify-center p-6">
                 <div className="text-center">
-                    <p className="text-muted-foreground">No production data recorded yet.</p>
-                    <p className="text-sm text-muted-foreground">Click 'New Entry' to start logging.</p>
+                    <p className="text-muted-foreground">Aucune donnée de production enregistrée.</p>
+                    <p className="text-sm text-muted-foreground">Cliquez sur 'Nouvelle entrée' pour commencer.</p>
                 </div>
             </CardContent>
         </Card>

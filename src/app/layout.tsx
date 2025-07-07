@@ -5,7 +5,7 @@ import PwaInstaller from '@/components/pwa-installer';
 
 export const metadata: Metadata = {
   title: 'OxyTrack',
-  description: 'Application for monitoring oxygen production.',
+  description: 'Application pour le suivi de la production d\'oxygène.',
   manifest: '/manifest.json',
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
