@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect } from 'react';
@@ -14,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { Clock, CalendarIcon, CheckCircle } from 'lucide-react';
 import { cn, formatTime, formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -47,7 +46,7 @@ interface ProductionDialogProps {
 
 const InfoField = ({ label, value }: { label: string; value: string }) => (
     <div className="flex items-center gap-2 text-sm">
-        <CheckCircle2 className="h-5 w-5 text-green-600" />
+        <CheckCircle className="h-5 w-5 text-green-600" />
         <div>
             <span className="font-medium text-gray-800">{label}:</span>
             <span className="ml-2 text-gray-600">{value}</span>
@@ -110,12 +109,16 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
       onAddEntry({ productionDate, startTime, source, producer });
       toast({ title: 'Succès', description: 'Nouvelle entrée de production créée.' });
     } else if (mode === 'update' && entry) {
-       if (data.endTime && entry.startTime.getTime() >= data.endTime.getTime()) {
+       if (data.endTime && entry.startTime && data.endTime.getTime() <= entry.startTime.getTime()) {
           toast({ variant: "destructive", title: "Erreur", description: "L'heure de fin doit être après l'heure de début." });
           return;
        }
-       if (data.boosterTime && entry.startTime.getTime() >= data.boosterTime.getTime()) {
+       if (data.boosterTime && entry.startTime && data.boosterTime.getTime() <= entry.startTime.getTime()) {
            toast({ variant: "destructive", title: "Erreur", description: "L'heure du booster doit être après l'heure d'allumage." });
+           return;
+       }
+       if (data.endTime && data.boosterTime && data.endTime.getTime() <= data.boosterTime.getTime()) {
+           toast({ variant: "destructive", title: "Erreur", description: "L'heure de fin doit être après l'heure du booster." });
            return;
        }
       onUpdateEntry(entry.id, finalData);
