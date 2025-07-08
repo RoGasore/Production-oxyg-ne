@@ -12,3 +12,16 @@ export interface ProductionEntry {
     observations: string;
     status: 'en-cours' | 'terminee';
 }
+
+export type SaleClientType = 'hopital' | 'entreprise';
+
+export interface SaleEntry {
+  id: string;
+  saleDate: Date;
+  clientType: SaleClientType;
+  clientName: string;
+  recipientName: string;
+  ourBottlesCount: number;
+  clientBottlesCount: number;
+  bottleNumbers: string;
+}
