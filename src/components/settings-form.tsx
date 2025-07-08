@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import type { SaleEntry } from '@/types';
+import type { SaleEntry, ProductionEntry } from '@/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,14 +23,19 @@ import {
 
 function ClientNameManager() {
     const [sales, setSales] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
+    const [productions, setProductions] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
     const [editingName, setEditingName] = useState<string | null>(null);
     const [newName, setNewName] = useState('');
     const { toast } = useToast();
 
     const clientNames = useMemo(() => {
-        const names = sales.map(s => s.clientName);
-        return [...new Set(names)].sort((a, b) => a.localeCompare(b));
-    }, [sales]);
+        const salesNames = sales.map(s => s.clientName);
+        const productionNames = productions
+            .filter(p => p.otherClientName)
+            .map(p => p.otherClientName as string);
+        const allNames = [...salesNames, ...productionNames];
+        return [...new Set(allNames)].sort((a, b) => a.localeCompare(b));
+    }, [sales, productions]);
 
     const handleEditClick = (name: string) => {
         setEditingName(name);
@@ -38,19 +43,24 @@ function ClientNameManager() {
     };
 
     const handleSave = (oldName: string) => {
-        if (!newName || newName.trim() === '') {
+        const trimmedNewName = newName.trim();
+        if (!trimmedNewName) {
             toast({ variant: 'destructive', title: "Erreur", description: "Le nom ne peut pas être vide." });
             return;
         }
 
-        if (clientNames.includes(newName) && newName !== oldName) {
+        if (clientNames.includes(trimmedNewName) && trimmedNewName !== oldName) {
             toast({ variant: 'destructive', title: "Erreur", description: "Ce nom de client existe déjà." });
             return;
         }
 
-        const updatedSales = sales.map(s => s.clientName === oldName ? { ...s, clientName: newName.trim() } : s);
+        const updatedSales = sales.map(s => s.clientName === oldName ? { ...s, clientName: trimmedNewName } : s);
         setSales(updatedSales);
-        toast({ title: 'Succès', description: `Le client '${oldName}' a été renommé en '${newName.trim()}'.` });
+
+        const updatedProductions = productions.map(p => p.otherClientName === oldName ? { ...p, otherClientName: trimmedNewName } : p);
+        setProductions(updatedProductions);
+
+        toast({ title: 'Succès', description: `Le client '${oldName}' a été renommé en '${trimmedNewName}'.` });
         setEditingName(null);
         setNewName('');
     };
@@ -60,7 +70,7 @@ function ClientNameManager() {
             <CardHeader>
                 <CardTitle>Gestion des Noms de Clients</CardTitle>
                 <CardDescription>
-                    Modifiez les noms des clients existants. Le changement sera appliqué à toutes les ventes passées.
+                    Modifiez les noms des clients (hôpitaux et entreprises). Le changement sera appliqué à toutes les ventes et fiches de production.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -83,7 +93,7 @@ function ClientNameManager() {
                             )}
                         </div>
                     ))}
-                     {clientNames.length === 0 && <p className="text-sm text-muted-foreground">Aucun client enregistré dans les ventes.</p>}
+                     {clientNames.length === 0 && <p className="text-sm text-muted-foreground">Aucun client enregistré dans les ventes ou la production.</p>}
                 </div>
             </CardContent>
         </Card>
