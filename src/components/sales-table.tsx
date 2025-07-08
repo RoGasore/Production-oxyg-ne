@@ -40,10 +40,10 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTable
                 <TableHead>Date</TableHead>
                 <TableHead>Type Client</TableHead>
                 <TableHead>Nom Client</TableHead>
-                <TableHead>Bénéficiaire</TableHead>
+                <TableHead>Réceptionnaire</TableHead>
                 <TableHead>Nos Bouteilles</TableHead>
                 <TableHead>Bouteilles Client</TableHead>
-                <TableHead>N° Bouteilles</TableHead>
+                <TableHead>N° Nos Bouteilles</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -59,7 +59,7 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTable
                   <TableCell>{entry.clientName}</TableCell>
                   <TableCell>{entry.recipientName || '-'}</TableCell>
                   <TableCell>{entry.ourBottlesCount}</TableCell>
-                  <TableCell>{entry.clientType === 'entreprise' ? entry.clientBottlesCount : '-'}</TableCell>
+                  <TableCell>{entry.clientBottlesCount > 0 ? entry.clientBottlesCount : '-'}</TableCell>
                   <TableCell className="max-w-[150px] truncate">{entry.bottleNumbers || '-'}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

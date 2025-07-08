@@ -29,7 +29,7 @@ const saleSchema = z.object({
   clientBottlesCount: z.coerce.number().optional(),
   bottleNumbers: z.string().optional(),
 }).refine(data => data.clientType !== 'hopital' || (data.recipientName && data.recipientName.length > 0), {
-    message: "Le nom du bénéficiaire est requis pour un hôpital.",
+    message: "Le nom de la personne qui récupère est requis pour un hôpital.",
     path: ["recipientName"],
 });
 
@@ -132,17 +132,15 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
             <FormField control={form.control} name="clientName" render={({ field }) => (<FormItem><FormLabel>Nom de {clientType === 'hopital' ? "l'hôpital" : "l'entreprise"}</FormLabel><FormControl><Input placeholder={clientType === 'hopital' ? "ex: Hôpital Général" : "ex: Mining Corp"} {...field} /></FormControl><FormMessage /></FormItem> )}/>
             
             {clientType === 'hopital' && (
-                 <FormField control={form.control} name="recipientName" render={({ field }) => (<FormItem><FormLabel>Nom du bénéficiaire</FormLabel><FormControl><Input placeholder="ex: Jean Dupont" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
+                 <FormField control={form.control} name="recipientName" render={({ field }) => (<FormItem><FormLabel>Nom de la personne qui récupère</FormLabel><FormControl><Input placeholder="ex: Jean Dupont" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
             )}
             
             <FormField control={form.control} name="ourBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de nos bouteilles</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
 
-            {clientType === 'entreprise' && (
-                <FormField control={form.control} name="clientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles du client</FormLabel><FormControl><Input type="number" placeholder="ex: 5" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
-            )}
+            <FormField control={form.control} name="clientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles du client</FormLabel><FormControl><Input type="number" placeholder="ex: 5" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
             
             {clientType === 'hopital' && (
-                <FormField control={form.control} name="bottleNumbers" render={({ field }) => (<FormItem><FormLabel>Numéros des bouteilles</FormLabel><FormControl><Textarea placeholder="ex: 101, 102, 105..." {...field} value={field.value ?? ""} /></FormControl><FormDescription>Séparez les numéros par une virgule.</FormDescription><FormMessage /></FormItem> )}/>
+                <FormField control={form.control} name="bottleNumbers" render={({ field }) => (<FormItem><FormLabel>Numéros de nos bouteilles</FormLabel><FormControl><Textarea placeholder="ex: 101, 102, 105..." {...field} value={field.value ?? ""} /></FormControl><FormDescription>Séparez les numéros par une virgule.</FormDescription><FormMessage /></FormItem> )}/>
             )}
 
 
