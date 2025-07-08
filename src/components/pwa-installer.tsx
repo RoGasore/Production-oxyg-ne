@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -32,18 +33,33 @@ export default function PwaInstaller() {
   }, []);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('SW registered: ', registration);
-      }).catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-        toast({
-          variant: "destructive",
-          title: "Erreur du Service Worker",
-          description: "La fonctionnalité hors ligne ne sera pas disponible.",
-        })
-      });
-    }
+    const manageServiceWorker = async () => {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('New SW registered: ', registration);
+          
+          toast({
+            title: "Application prête",
+            description: "La dernière version a été chargée.",
+          });
+
+        } catch (error) {
+          console.error('Service Worker management failed: ', error);
+          toast({
+            variant: "destructive",
+            title: "Erreur du Service Worker",
+            description: "La fonctionnalité hors ligne pourrait ne pas être disponible.",
+          });
+        }
+      }
+    };
+
+    manageServiceWorker();
   }, [toast]);
 
   const handleInstallClick = async () => {
