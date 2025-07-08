@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { SaleEntry } from '@/types';
 import { SalesTable } from '@/components/sales-table';
 import { SaleDialog } from '@/components/sale-dialog';
@@ -19,15 +19,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 export default function SalesLog() {
   const [entries, setEntries] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
   const [dialogState, setDialogState] = useState<{mode: 'create' | 'update' | null, entry?: SaleEntry}>({ mode: null });
   const [entryToDelete, setEntryToDelete] = useState<SaleEntry | null>(null);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const { toast } = useToast();
 
   const addEntry = (data: Omit<SaleEntry, 'id'>) => {
-    const newEntry: SaleEntry = { ...data, id: Date.now().toString() };
+    const newEntry: SaleEntry = { ...data, id: Date.now().toString(), status: 'pending' };
     const sortedEntries = [...entries, newEntry].sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
     setEntries(sortedEntries);
   };
@@ -36,6 +39,18 @@ export default function SalesLog() {
     setEntries(prevEntries =>
       prevEntries.map(entry => entry.id === id ? { ...entry, ...data } : entry)
       .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
+    );
+  };
+  
+  const toggleSaleStatus = (id: string) => {
+    setEntries(prevEntries =>
+      prevEntries.map(entry => {
+        if (entry.id === id) {
+          toast({ title: 'Statut mis à jour', description: 'La vente a été marquée comme récupérée.' });
+          return { ...entry, status: 'completed' };
+        }
+        return entry;
+      })
     );
   };
 
@@ -48,6 +63,11 @@ export default function SalesLog() {
     });
   };
 
+  const filteredEntries = useMemo(() => {
+    if (filter === 'all') return entries;
+    return entries.filter(entry => entry.status === filter);
+  }, [entries, filter]);
+
   return (
     <div className="flex flex-1 flex-col gap-4">
         <div className="flex items-center">
@@ -57,10 +77,18 @@ export default function SalesLog() {
                 Nouvelle vente
             </Button>
         </div>
+         <Tabs defaultValue="all" onValueChange={(value) => setFilter(value as any)}>
+            <TabsList>
+                <TabsTrigger value="all">Toutes</TabsTrigger>
+                <TabsTrigger value="pending">Non récupérées</TabsTrigger>
+                <TabsTrigger value="completed">Récupérées</TabsTrigger>
+            </TabsList>
+        </Tabs>
         <SalesTable 
-            entries={entries} 
+            entries={filteredEntries} 
             onUpdateClick={(entry) => setDialogState({ mode: 'update', entry })}
             onDeleteClick={(entry) => setEntryToDelete(entry)}
+            onToggleStatus={toggleSaleStatus}
         />
       <SaleDialog
         mode={dialogState.mode}

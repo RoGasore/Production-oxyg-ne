@@ -28,6 +28,7 @@ const saleSchema = z.object({
   recipientName: z.string().optional(),
   clientBottlesCount: z.coerce.number().optional(),
   bottleNumbers: z.string().optional(),
+  status: z.enum(['pending', 'completed']),
 }).refine(data => data.clientType !== 'hopital' || (data.recipientName && data.recipientName.length > 0), {
     message: "Le nom de la personne qui récupère est requis pour un hôpital.",
     path: ["recipientName"],
@@ -56,7 +57,8 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
       recipientName: '',
       ourBottlesCount: 0,
       clientBottlesCount: 0,
-      bottleNumbers: ''
+      bottleNumbers: '',
+      status: 'pending',
     },
   });
 
@@ -69,7 +71,8 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
         recipientName: '',
         ourBottlesCount: 0,
         clientBottlesCount: 0,
-        bottleNumbers: ''
+        bottleNumbers: '',
+        status: 'pending'
       });
     } else if (mode === 'update' && entry) {
       form.reset({
@@ -90,7 +93,8 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
         ourBottlesCount: data.ourBottlesCount,
         recipientName: data.recipientName || '',
         clientBottlesCount: data.clientBottlesCount || 0,
-        bottleNumbers: data.bottleNumbers || ''
+        bottleNumbers: data.bottleNumbers || '',
+        status: mode === 'create' ? 'pending' : data.status,
     };
     
     if (mode === 'create') {

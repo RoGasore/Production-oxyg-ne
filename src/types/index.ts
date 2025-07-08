@@ -11,6 +11,9 @@ export interface ProductionEntry {
     producer: string;
     observations: string;
     status: 'en-cours' | 'terminee';
+    bottleDestination: 'hopital' | 'hopital-entreprises' | null;
+    otherClientName: string | null;
+    otherClientBottlesCount: number | null;
 }
 
 export type SaleClientType = 'hopital' | 'entreprise';
@@ -24,4 +27,5 @@ export interface SaleEntry {
   ourBottlesCount: number;
   clientBottlesCount: number;
   bottleNumbers: string;
+  status: 'pending' | 'completed';
 }

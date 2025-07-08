@@ -14,15 +14,16 @@ interface SalesTableProps {
   entries: SaleEntry[];
   onUpdateClick: (entry: SaleEntry) => void;
   onDeleteClick: (entry: SaleEntry) => void;
+  onToggleStatus: (id: string) => void;
 }
 
-export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTableProps) {
+export function SalesTable({ entries, onUpdateClick, onDeleteClick, onToggleStatus }: SalesTableProps) {
   if (entries.length === 0) {
     return (
         <Card>
             <CardContent className="flex min-h-[200px] items-center justify-center p-6">
                 <div className="text-center">
-                    <p className="text-muted-foreground">Aucune vente enregistrée.</p>
+                    <p className="text-muted-foreground">Aucune vente enregistrée pour ce filtre.</p>
                     <p className="text-sm text-muted-foreground">Cliquez sur 'Nouvelle vente' pour commencer.</p>
                 </div>
             </CardContent>
@@ -38,12 +39,12 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTable
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Type Client</TableHead>
-                <TableHead>Nom Client</TableHead>
+                <TableHead>Client</TableHead>
                 <TableHead>Réceptionnaire</TableHead>
                 <TableHead>Nos Bouteilles</TableHead>
                 <TableHead>Bouteilles Client</TableHead>
                 <TableHead>N° Nos Bouteilles</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -52,15 +53,18 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTable
                 <TableRow key={entry.id}>
                   <TableCell>{formatDate(entry.saleDate)}</TableCell>
                   <TableCell>
-                    <Badge variant={entry.clientType === 'hopital' ? 'default' : 'secondary'}>
-                      {entry.clientType.charAt(0).toUpperCase() + entry.clientType.slice(1)}
-                    </Badge>
+                    <div className="font-medium">{entry.clientName}</div>
+                    <div className="text-sm text-muted-foreground">{entry.clientType.charAt(0).toUpperCase() + entry.clientType.slice(1)}</div>
                   </TableCell>
-                  <TableCell>{entry.clientName}</TableCell>
                   <TableCell>{entry.recipientName || '-'}</TableCell>
                   <TableCell>{entry.ourBottlesCount}</TableCell>
                   <TableCell>{entry.clientBottlesCount > 0 ? entry.clientBottlesCount : '-'}</TableCell>
                   <TableCell className="max-w-[150px] truncate">{entry.bottleNumbers || '-'}</TableCell>
+                   <TableCell>
+                    <Badge variant={entry.status === 'completed' ? 'default' : 'secondary'}>
+                      {entry.status === 'completed' ? 'Récupérée' : 'En attente'}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -71,6 +75,11 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick }: SalesTable
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            {entry.status === 'pending' && (
+                                <DropdownMenuItem onClick={() => onToggleStatus(entry.id)}>
+                                    Marquer comme récupérée
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onClick={() => onUpdateClick(entry)}>
                                 Modifier
                             </DropdownMenuItem>

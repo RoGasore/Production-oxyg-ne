@@ -30,6 +30,16 @@ interface ProductionTableProps {
   onDeleteClick: (entry: ProductionEntry) => void;
 }
 
+const formatBottles = (entry: ProductionEntry) => {
+    if (entry.status !== 'terminee') return '-';
+    let text = `${entry.bottlesProduced || 0}`;
+    if (entry.bottleDestination === 'hopital-entreprises' && entry.otherClientBottlesCount) {
+        text += ` (+${entry.otherClientBottlesCount} ${entry.otherClientName || 'Autre'})`;
+    }
+    return text;
+}
+
+
 export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: ProductionTableProps) {
   if (entries.length === 0) {
     return (
@@ -71,7 +81,7 @@ export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: Produ
                   <TableCell>{formatTime(entry.boosterTime)}</TableCell>
                   <TableCell>{formatTime(entry.endTime)}</TableCell>
                   <TableCell>{entry.duration}</TableCell>
-                  <TableCell>{entry.status === 'terminee' ? entry.bottlesProduced : '-'}</TableCell>
+                  <TableCell>{formatBottles(entry)}</TableCell>
                   <TableCell>{entry.source.toUpperCase()}</TableCell>
                   <TableCell>{entry.producer}</TableCell>
                   <TableCell>

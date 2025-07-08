@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect } from 'react';
@@ -10,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +20,7 @@ import { cn, formatTime, formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { ProductionEntry } from '@/types';
+import { useSettings } from '@/hooks/use-settings';
 
 const productionSchema = z.object({
   productionDate: z.date({ required_error: "La date de production est requise." }),
@@ -29,10 +32,17 @@ const productionSchema = z.object({
   endTime: z.date().optional().nullable(),
   bottlesProduced: z.coerce.number().optional().nullable(),
   observations: z.string().optional().nullable(),
+  bottleDestination: z.enum(['hopital', 'hopital-entreprises']).optional().nullable(),
+  otherClientName: z.string().optional().nullable(),
+  otherClientBottlesCount: z.coerce.number().optional().nullable(),
 }).refine(data => data.source !== 'autre' || (data.sourceOther && data.sourceOther.length > 0), {
     message: "Veuillez préciser la source 'autre'.",
     path: ["sourceOther"],
+}).refine(data => data.bottleDestination !== 'hopital-entreprises' || (data.otherClientName && data.otherClientName.length > 0), {
+    message: "Le nom de l'entreprise est requis.",
+    path: ["otherClientName"],
 });
+
 
 type FormValues = z.infer<typeof productionSchema>;
 
@@ -75,17 +85,21 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
 
 export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: ProductionDialogProps) {
   const { toast } = useToast();
+  const [settings] = useSettings();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(productionSchema),
     defaultValues: {
       productionDate: new Date(),
       source: 'snel',
-      producer: 'Rodrigue Gasore',
+      producer: settings.defaultProducer,
       observations: 'RAS',
       boosterTime: null,
       endTime: null,
-      bottlesProduced: 0
+      bottlesProduced: 0,
+      bottleDestination: 'hopital',
+      otherClientName: '',
+      otherClientBottlesCount: 0
     },
   });
 
@@ -95,26 +109,32 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
         productionDate: new Date(),
         startTime: undefined,
         source: 'snel',
-        producer: 'Rodrigue Gasore',
+        producer: settings.defaultProducer,
         sourceOther: '',
         boosterTime: null,
         endTime: null,
         bottlesProduced: 0,
-        observations: "RAS"
+        observations: "RAS",
+        bottleDestination: 'hopital',
+        otherClientName: '',
+        otherClientBottlesCount: 0
       });
     } else if (mode === 'update' && entry) {
       form.reset({
         ...entry,
-        // Handle case where source might be 'autre'
         source: ['snel', 'groupe', 'socodee'].includes(entry.source) ? entry.source : 'autre',
         sourceOther: ['snel', 'groupe', 'socodee'].includes(entry.source) ? '' : entry.source,
         bottlesProduced: entry.bottlesProduced || 0,
         observations: entry.observations || 'RAS',
+        bottleDestination: entry.bottleDestination || 'hopital',
+        otherClientName: entry.otherClientName || '',
+        otherClientBottlesCount: entry.otherClientBottlesCount || 0,
       });
     }
-  }, [mode, entry, form]);
+  }, [mode, entry, form, settings.defaultProducer]);
 
   const sourceValue = form.watch('source');
+  const bottleDestination = form.watch('bottleDestination');
   
   const setTimeToNow = (field: 'startTime' | 'boosterTime' | 'endTime') => {
     form.setValue(field, new Date(), { shouldValidate: true });
@@ -141,6 +161,10 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
     
     if (mode === 'create') {
       const { productionDate, startTime, source, producer } = finalData;
+      if (!startTime) {
+        toast({ variant: "destructive", title: "Erreur", description: "L'heure d'allumage est requise." });
+        return;
+      }
       onAddEntry({ productionDate, startTime, source, producer });
       toast({ title: 'Succès', description: 'Nouvelle entrée de production créée.' });
     } else if (mode === 'update' && entry) {
@@ -166,7 +190,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
   const isOpen = mode !== null;
   const isUpdate = mode === 'update';
   const isFullEdit = isUpdate && entry?.status === 'terminee';
-  const formatForTimeInput = (date: Date | null) => date ? format(new Date(date), 'HH:mm') : '';
+  const formatForTimeInput = (date: Date | null | undefined) => date ? format(new Date(date), 'HH:mm') : '';
 
   const dialogTitle = isFullEdit ? 'Modifier la Fiche' : isUpdate ? 'Compléter la Fiche' : 'Démarrer une Fiche';
   const dialogDescription = isFullEdit ? 'Modifiez les informations de cette fiche.' : isUpdate ? 'Complétez les informations manquantes.' : 'Remplissez les détails de début de journée.';
@@ -182,7 +206,6 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
             
-            {/* Fields for Create and Full Edit */}
             {isFullEdit || !isUpdate ? (
                 <>
                     <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(new Date(field.value), "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
@@ -200,18 +223,36 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
                 </>
             )}
 
-            {/* Fields for Completion and Full Edit */}
             {isUpdate && (
                 <>
-                    {/* Booster Time */}
                     {entry?.boosterTime && !isFullEdit ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    {/* End Time */}
                     {entry?.endTime && !isFullEdit ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    {/* Bottles and Observations */}
-                    <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles produites</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
-                    <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
+                    {entry?.status === 'terminee' || isFullEdit ? (
+                        <>
+                         <FormField
+                            control={form.control} name="bottleDestination" render={({ field }) => (
+                                <FormItem className="space-y-3"><FormLabel>Destination des bouteilles</FormLabel>
+                                <FormControl>
+                                    <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex items-center space-x-4">
+                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="hopital" /></FormControl><FormLabel className="font-normal">Hôpital uniquement</FormLabel></FormItem>
+                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="hopital-entreprises" /></FormControl><FormLabel className="font-normal">Hôpital et Entreprises</FormLabel></FormItem>
+                                    </RadioGroup>
+                                </FormControl><FormMessage /></FormItem>
+                         )}/>
+
+                          <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Bouteilles produites (pour hôpital)</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
+
+                          {bottleDestination === 'hopital-entreprises' && (
+                            <>
+                                <FormField control={form.control} name="otherClientName" render={({ field }) => (<FormItem><FormLabel>Nom de l'entreprise</FormLabel><FormControl><Input placeholder="ex: Socodee" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem> )}/>
+                                <FormField control={form.control} name="otherClientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Bouteilles (pour entreprise)</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
+                            </>
+                          )}
+                          <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
+                        </>
+                    ) : null}
                 </>
             )}
 
