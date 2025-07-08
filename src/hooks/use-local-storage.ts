@@ -1,27 +1,29 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // This hook syncs state to local storage so that it persists through a page refresh.
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
+function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+  // This effect runs only on the client, after the initial render.
+  // This prevents a hydration mismatch between server-rendered and client-rendered HTML.
+  useEffect(() => {
     try {
       const item = window.localStorage.getItem(key);
-      // Parse stored json or if none return initialValue.
-      // The reviver function handles converting ISO date strings back to Date objects.
-      return item ? JSON.parse(item, (key, value) => {
-        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)) {
-            return new Date(value);
-        }
-        return value;
-      }) : initialValue;
+      if (item) {
+        // The reviver function handles converting ISO date strings back to Date objects.
+        const value = JSON.parse(item, (k, v) => {
+          if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(v)) {
+              return new Date(v);
+          }
+          return v;
+        });
+        setStoredValue(value);
+      }
     } catch (error) {
-      console.error(error);
-      return initialValue;
+      console.log(error);
     }
-  });
+  }, [key]);
 
   const setValue = (value: T | ((val: T) => T)) => {
     try {
