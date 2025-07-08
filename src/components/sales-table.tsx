@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils';
 import { MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useSettings } from '@/hooks/use-settings';
 
 interface SalesTableProps {
   entries: SaleEntry[];
@@ -18,6 +19,8 @@ interface SalesTableProps {
 }
 
 export function SalesTable({ entries, onUpdateClick, onDeleteClick, onToggleStatus }: SalesTableProps) {
+  const { settings } = useSettings();
+
   if (entries.length === 0) {
     return (
         <Card>
@@ -41,9 +44,9 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick, onToggleStat
                 <TableHead>Date</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Réceptionnaire</TableHead>
-                <TableHead>Nos Bouteilles</TableHead>
+                <TableHead>Bouteilles ({settings.companyName})</TableHead>
                 <TableHead>Bouteilles Client</TableHead>
-                <TableHead>N° Nos Bouteilles</TableHead>
+                <TableHead>N° Bouteilles ({settings.companyName})</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>

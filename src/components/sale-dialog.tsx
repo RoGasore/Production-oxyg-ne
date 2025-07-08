@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { SaleEntry } from '@/types';
+import { useSettings } from '@/hooks/use-settings';
 
 const saleSchema = z.object({
   saleDate: z.date({ required_error: "La date de vente est requise." }),
@@ -47,6 +48,7 @@ interface SaleDialogProps {
 
 export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: SaleDialogProps) {
   const { toast } = useToast();
+  const { settings } = useSettings();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(saleSchema),
@@ -139,12 +141,12 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
                  <FormField control={form.control} name="recipientName" render={({ field }) => (<FormItem><FormLabel>Nom de la personne qui récupère</FormLabel><FormControl><Input placeholder="ex: Jean Dupont" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
             )}
             
-            <FormField control={form.control} name="ourBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de nos bouteilles</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
+            <FormField control={form.control} name="ourBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles ({settings.companyName})</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
 
             <FormField control={form.control} name="clientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles du client</FormLabel><FormControl><Input type="number" placeholder="ex: 5" {...field} min="0" value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
             
             {clientType === 'hopital' && (
-                <FormField control={form.control} name="bottleNumbers" render={({ field }) => (<FormItem><FormLabel>Numéros de nos bouteilles</FormLabel><FormControl><Textarea placeholder="ex: 101, 102, 105..." {...field} value={field.value ?? ""} /></FormControl><FormDescription>Séparez les numéros par une virgule.</FormDescription><FormMessage /></FormItem> )}/>
+                <FormField control={form.control} name="bottleNumbers" render={({ field }) => (<FormItem><FormLabel>Numéros des bouteilles ({settings.companyName})</FormLabel><FormControl><Textarea placeholder="ex: 101, 102, 105..." {...field} value={field.value ?? ""} /></FormControl><FormDescription>Séparez les numéros par une virgule.</FormDescription><FormMessage /></FormItem> )}/>
             )}
 
 

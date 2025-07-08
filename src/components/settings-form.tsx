@@ -104,11 +104,13 @@ function ClientNameManager() {
 export default function SettingsForm() {
     const { settings, updateSettings } = useSettings();
     const [producer, setProducer] = useState(settings.defaultProducer);
+    const [companyName, setCompanyName] = useState(settings.companyName);
     const { toast } = useToast();
 
     useEffect(() => {
         setProducer(settings.defaultProducer);
-    }, [settings.defaultProducer]);
+        setCompanyName(settings.companyName);
+    }, [settings.defaultProducer, settings.companyName]);
 
     const handleSaveProducer = () => {
         if (!producer || producer.trim() === '') {
@@ -117,6 +119,15 @@ export default function SettingsForm() {
         }
         updateSettings({ defaultProducer: producer.trim() });
         toast({ title: 'Succès', description: 'Le nom du producteur par défaut a été mis à jour.' });
+    };
+
+    const handleSaveCompanyName = () => {
+        if (!companyName || companyName.trim() === '') {
+            toast({ variant: 'destructive', title: "Erreur", description: "Le nom de l'entreprise ne peut pas être vide." });
+            return;
+        }
+        updateSettings({ companyName: companyName.trim() });
+        toast({ title: 'Succès', description: "Le nom de l'entreprise a été mis à jour." });
     };
 
     return (
@@ -139,6 +150,19 @@ export default function SettingsForm() {
                             />
                             <Button onClick={handleSaveProducer}>Enregistrer</Button>
                         </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="company-name">Nom de l'entreprise</Label>
+                        <div className="flex gap-2">
+                            <Input 
+                                id="company-name" 
+                                value={companyName} 
+                                onChange={(e) => setCompanyName(e.target.value)}
+                                placeholder="ex: Mon Usine d'Oxygène"
+                            />
+                            <Button onClick={handleSaveCompanyName}>Enregistrer</Button>
+                        </div>
+                         <p className="text-sm text-muted-foreground">Ce nom sera utilisé pour identifier "vos" bouteilles.</p>
                     </div>
                 </CardContent>
             </Card>
