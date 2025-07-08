@@ -14,13 +14,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatTime, formatDate } from '@/lib/utils';
+import { MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProductionTableProps {
   entries: ProductionEntry[];
   onUpdateClick: (entry: ProductionEntry) => void;
+  onDeleteClick: (entry: ProductionEntry) => void;
 }
 
-export function ProductionTable({ entries, onUpdateClick }: ProductionTableProps) {
+export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: ProductionTableProps) {
   if (entries.length === 0) {
     return (
         <Card>
@@ -70,9 +80,27 @@ export function ProductionTable({ entries, onUpdateClick }: ProductionTableProps
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {entry.status === 'en-cours' && (
-                      <Button variant="outline" size="sm" onClick={() => onUpdateClick(entry)}>Compléter</Button>
-                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Ouvrir le menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => onUpdateClick(entry)}>
+                                {entry.status === 'en-cours' ? 'Compléter' : 'Modifier'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onClick={() => onDeleteClick(entry)}
+                            >
+                                Supprimer
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}

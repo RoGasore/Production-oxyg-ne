@@ -105,6 +105,9 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
     } else if (mode === 'update' && entry) {
       form.reset({
         ...entry,
+        // Handle case where source might be 'autre'
+        source: ['snel', 'groupe', 'socodee'].includes(entry.source) ? entry.source : 'autre',
+        sourceOther: ['snel', 'groupe', 'socodee'].includes(entry.source) ? '' : entry.source,
         bottlesProduced: entry.bottlesProduced || 0,
         observations: entry.observations || 'RAS',
       });
@@ -141,11 +144,12 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
       onAddEntry({ productionDate, startTime, source, producer });
       toast({ title: 'Succès', description: 'Nouvelle entrée de production créée.' });
     } else if (mode === 'update' && entry) {
-       if (data.endTime && entry.startTime && data.endTime.getTime() <= entry.startTime.getTime()) {
+       const startTime = new Date(entry.startTime);
+       if (data.endTime && data.endTime.getTime() <= startTime.getTime()) {
           toast({ variant: "destructive", title: "Erreur", description: "L'heure de fin doit être après l'heure de début." });
           return;
        }
-       if (data.boosterTime && entry.startTime && data.boosterTime.getTime() <= entry.startTime.getTime()) {
+       if (data.boosterTime && data.boosterTime.getTime() <= startTime.getTime()) {
            toast({ variant: "destructive", title: "Erreur", description: "L'heure du booster doit être après l'heure d'allumage." });
            return;
        }
@@ -161,34 +165,51 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
   
   const isOpen = mode !== null;
   const isUpdate = mode === 'update';
-  const formatForTimeInput = (date: Date | null) => date ? date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '';
+  const isFullEdit = isUpdate && entry?.status === 'terminee';
+  const formatForTimeInput = (date: Date | null) => date ? format(new Date(date), 'HH:mm') : '';
+
+  const dialogTitle = isFullEdit ? 'Modifier la Fiche' : isUpdate ? 'Compléter la Fiche' : 'Démarrer une Fiche';
+  const dialogDescription = isFullEdit ? 'Modifiez les informations de cette fiche.' : isUpdate ? 'Complétez les informations manquantes.' : 'Remplissez les détails de début de journée.';
 
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{isUpdate ? 'Mettre à jour la Fiche' : 'Démarrer une Fiche'}</DialogTitle>
-          <DialogDescription>{isUpdate ? 'Complétez les informations manquantes.' : 'Remplissez les détails de début de journée.'}</DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
             
-            {/* --- Champs toujours visibles ou remplis --- */}
-            {isUpdate && entry ? <InfoField label="Date de production" value={formatDate(entry.productionDate)} /> : <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>}
-            {isUpdate && entry ? <InfoField label="Producteur" value={entry.producer} /> : <FormField control={form.control} name="producer" render={({ field }) => (<FormItem><FormLabel>Produit par</FormLabel><FormControl><Input placeholder="Nom du producteur" {...field} /></FormControl><FormMessage /></FormItem> )}/>}
-            {isUpdate && entry ? <InfoField label="Source d'énergie" value={entry.source.toUpperCase()} /> : <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>}
-            {sourceValue === 'autre' && !isUpdate && (<FormField control={form.control} name="sourceOther" render={({ field }) => (<FormItem><FormLabel>Précisez la source</FormLabel><FormControl><Input placeholder="Source libre" {...field} /></FormControl><FormMessage /></FormItem>)}/> )}
-            
-            {/* --- Champs à remplir progressivement --- */}
-            {isUpdate && entry?.startTime ? <InfoField label="Heure d'allumage usine" value={formatTime(entry.startTime)} /> : <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Heure d'allumage de l'usine</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('startTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+            {/* Fields for Create and Full Edit */}
+            {isFullEdit || !isUpdate ? (
+                <>
+                    <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(new Date(field.value), "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
+                    <FormField control={form.control} name="producer" render={({ field }) => (<FormItem><FormLabel>Produit par</FormLabel><FormControl><Input placeholder="Nom du producteur" {...field} /></FormControl><FormMessage /></FormItem> )}/>
+                    <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>
+                    {sourceValue === 'autre' && (<FormField control={form.control} name="sourceOther" render={({ field }) => (<FormItem><FormLabel>Précisez la source</FormLabel><FormControl><Input placeholder="Source libre" {...field} /></FormControl><FormMessage /></FormItem>)}/> )}
+                    <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Heure d'allumage de l'usine</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('startTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>
+                </>
+            ) : (
+                <>
+                  {entry?.productionDate && <InfoField label="Date de production" value={formatDate(entry.productionDate)} />}
+                  {entry?.producer && <InfoField label="Producteur" value={entry.producer} />}
+                  {entry?.source && <InfoField label="Source d'énergie" value={entry.source.toUpperCase()} />}
+                  {entry?.startTime && <InfoField label="Heure d'allumage usine" value={formatTime(entry.startTime)} />}
+                </>
+            )}
 
+            {/* Fields for Completion and Full Edit */}
             {isUpdate && (
                 <>
-                    {entry?.boosterTime ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+                    {/* Booster Time */}
+                    {entry?.boosterTime && !isFullEdit ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    {entry?.endTime ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+                    {/* End Time */}
+                    {entry?.endTime && !isFullEdit ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
+                    {/* Bottles and Observations */}
                     <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles produites</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
                 </>
