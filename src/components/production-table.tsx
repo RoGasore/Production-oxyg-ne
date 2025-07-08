@@ -5,20 +5,22 @@ import type { ProductionEntry } from '@/types';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatTime } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { formatTime, formatDate } from '@/lib/utils';
 
 interface ProductionTableProps {
   entries: ProductionEntry[];
+  onCompleteClick: (entry: ProductionEntry) => void;
 }
 
-export function ProductionTable({ entries }: ProductionTableProps) {
+export function ProductionTable({ entries, onCompleteClick }: ProductionTableProps) {
   if (entries.length === 0) {
     return (
         <Card>
@@ -35,36 +37,48 @@ export function ProductionTable({ entries }: ProductionTableProps) {
   return (
     <Card>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Début</TableHead>
-              <TableHead>Début Booster</TableHead>
-              <TableHead>Fin</TableHead>
-              <TableHead>Durée</TableHead>
-              <TableHead>Bouteilles</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Producteur</TableHead>
-              <TableHead>Observations</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {entries.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>{entry.productionDate.toLocaleDateString('fr-FR')}</TableCell>
-                <TableCell>{formatTime(entry.startTime)}</TableCell>
-                <TableCell>{formatTime(entry.boosterTime)}</TableCell>
-                <TableCell>{formatTime(entry.endTime)}</TableCell>
-                <TableCell>{entry.duration}</TableCell>
-                <TableCell>{entry.bottlesProduced}</TableCell>
-                <TableCell>{entry.source}</TableCell>
-                <TableCell>{entry.producer}</TableCell>
-                <TableCell className="max-w-[200px] truncate">{entry.observations}</TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Début Usine</TableHead>
+                <TableHead>Début Booster</TableHead>
+                <TableHead>Fin</TableHead>
+                <TableHead>Durée</TableHead>
+                <TableHead>Bouteilles</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Producteur</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{formatDate(entry.productionDate)}</TableCell>
+                  <TableCell>{formatTime(entry.startTime)}</TableCell>
+                  <TableCell>{formatTime(entry.boosterTime)}</TableCell>
+                  <TableCell>{formatTime(entry.endTime)}</TableCell>
+                  <TableCell>{entry.duration}</TableCell>
+                  <TableCell>{entry.status === 'terminee' ? entry.bottlesProduced : 'N/A'}</TableCell>
+                  <TableCell>{entry.source}</TableCell>
+                  <TableCell>{entry.producer}</TableCell>
+                  <TableCell>
+                    <Badge variant={entry.status === 'terminee' ? 'default' : 'secondary'}>
+                      {entry.status === 'terminee' ? 'Terminée' : 'En cours'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {entry.status === 'en-cours' && (
+                      <Button variant="outline" size="sm" onClick={() => onCompleteClick(entry)}>Compléter</Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -20,4 +21,9 @@ export function formatDuration(milliseconds: number) {
 export function formatTime(date: Date | null) {
     if (!date) return 'N/A';
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+export function formatDate(date: Date | null) {
+    if (!date) return 'N/A';
+    return date.toLocaleDateString('fr-FR');
 }
