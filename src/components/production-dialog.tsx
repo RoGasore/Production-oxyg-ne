@@ -19,8 +19,9 @@ import { Clock, CalendarIcon } from 'lucide-react';
 import { cn, formatTime, formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { ProductionEntry } from '@/types';
+import type { ProductionEntry, SaleEntry, SaleClientType } from '@/types';
 import { useSettings } from '@/hooks/use-settings';
+import useLocalStorage from '@/hooks/use-local-storage';
 
 const productionSchema = z.object({
   productionDate: z.date({ required_error: "La date de production est requise." }),
@@ -86,6 +87,7 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
 export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: ProductionDialogProps) {
   const { toast } = useToast();
   const { settings } = useSettings();
+  const [, setSales] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(productionSchema),
@@ -181,8 +183,32 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
            toast({ variant: "destructive", title: "Erreur", description: "L'heure de fin doit être après l'heure du booster." });
            return;
        }
-      onUpdateEntry(entry.id, finalData);
-      toast({ title: 'Succès', description: 'Fiche de production mise à jour.' });
+
+        const hadCompanyBottles = entry.otherClientBottlesCount && entry.otherClientBottlesCount > 0;
+        const hasCompanyBottlesNow = finalData.bottleDestination === 'hopital-entreprises' && finalData.otherClientName && finalData.otherClientBottlesCount && finalData.otherClientBottlesCount > 0;
+
+        onUpdateEntry(entry.id, finalData);
+        
+        if (hasCompanyBottlesNow && !hadCompanyBottles) {
+            const newSale: SaleEntry = {
+                id: Date.now().toString(),
+                saleDate: finalData.productionDate,
+                clientType: 'entreprise',
+                clientName: finalData.otherClientName!,
+                recipientName: '',
+                ourBottlesCount: finalData.otherClientBottlesCount!,
+                clientBottlesCount: 0,
+                bottleNumbers: '',
+                status: 'pending'
+            };
+            setSales(prevSales => [...prevSales, newSale].sort((a,b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime()));
+            toast({
+                title: 'Mise à jour et Vente Créée',
+                description: `La fiche de production est à jour et une vente a été créée pour ${newSale.clientName}.`,
+            });
+        } else {
+            toast({ title: 'Succès', description: 'Fiche de production mise à jour.' });
+        }
     }
     onOpenChange(false);
   };

@@ -32,11 +32,16 @@ interface ProductionTableProps {
 
 const formatBottles = (entry: ProductionEntry) => {
     if (entry.status !== 'terminee') return '-';
-    let text = `${entry.bottlesProduced || 0}`;
-    if (entry.bottleDestination === 'hopital-entreprises' && entry.otherClientBottlesCount) {
-        text += ` (+${entry.otherClientBottlesCount} ${entry.otherClientName || 'Autre'})`;
+
+    const hospitalBottles = entry.bottlesProduced || 0;
+    const companyBottles = entry.otherClientBottlesCount || 0;
+
+    if (entry.bottleDestination === 'hopital-entreprises' && companyBottles > 0) {
+        const totalBottles = hospitalBottles + companyBottles;
+        return `${totalBottles} (${hospitalBottles} + ${companyBottles})`;
     }
-    return text;
+
+    return `${hospitalBottles}`;
 }
 
 
