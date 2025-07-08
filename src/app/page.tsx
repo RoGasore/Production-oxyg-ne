@@ -8,9 +8,9 @@ import { ProductionTable } from '@/components/production-table';
 import { ProductionDialog } from '@/components/production-dialog';
 import NotificationScheduler from '@/components/notification-scheduler';
 import { formatDuration } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const [entries, setEntries] = useState<ProductionEntry[]>([]);
