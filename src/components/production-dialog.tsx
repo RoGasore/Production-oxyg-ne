@@ -85,7 +85,7 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
 
 export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: ProductionDialogProps) {
   const { toast } = useToast();
-  const [settings] = useSettings();
+  const { settings } = useSettings();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(productionSchema),
