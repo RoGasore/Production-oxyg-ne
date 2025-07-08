@@ -9,6 +9,7 @@ import SalesLog from '@/components/sales-log';
 import NotificationScheduler from '@/components/notification-scheduler';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
+import Dashboard from '@/components/dashboard';
 
 export default function Home() {
   return (
@@ -27,11 +28,15 @@ export default function Home() {
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <Tabs defaultValue="production" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
+            <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
             <TabsTrigger value="production">Journal de production</TabsTrigger>
             <TabsTrigger value="sales">Journal des ventes</TabsTrigger>
           </TabsList>
+          <TabsContent value="dashboard" className="mt-4">
+            <Dashboard />
+          </TabsContent>
           <TabsContent value="production" className="mt-4">
             <ProductionLog />
           </TabsContent>
