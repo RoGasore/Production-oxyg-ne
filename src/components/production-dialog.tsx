@@ -75,6 +75,7 @@ export function ProductionDialog({ onAddEntry }: ProductionDialogProps) {
       producer: 'Rodrigue Gasore',
       observations: '',
       sourceOther: '',
+      bottlesProduced: 0,
     },
   });
 
@@ -114,6 +115,7 @@ export function ProductionDialog({ onAddEntry }: ProductionDialogProps) {
             producer: 'Rodrigue Gasore',
             observations: '',
             sourceOther: '',
+            bottlesProduced: 0,
         });
     } catch (error) {
         toast({
