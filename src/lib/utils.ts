@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDuration(milliseconds: number) {
   if (isNaN(milliseconds) || milliseconds < 0) {
-    return "N/A";
+    return "-";
   }
 
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -19,11 +19,11 @@ export function formatDuration(milliseconds: number) {
 }
 
 export function formatTime(date: Date | null) {
-    if (!date) return 'N/A';
+    if (!date) return '-';
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 export function formatDate(date: Date | null) {
-    if (!date) return 'N/A';
+    if (!date) return '-';
     return date.toLocaleDateString('fr-FR');
 }

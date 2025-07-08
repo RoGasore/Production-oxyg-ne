@@ -61,8 +61,8 @@ export function ProductionTable({ entries, onUpdateClick }: ProductionTableProps
                   <TableCell>{formatTime(entry.boosterTime)}</TableCell>
                   <TableCell>{formatTime(entry.endTime)}</TableCell>
                   <TableCell>{entry.duration}</TableCell>
-                  <TableCell>{entry.status === 'terminee' ? entry.bottlesProduced : 'N/A'}</TableCell>
-                  <TableCell>{entry.source}</TableCell>
+                  <TableCell>{entry.status === 'terminee' ? entry.bottlesProduced : '-'}</TableCell>
+                  <TableCell>{entry.source.toUpperCase()}</TableCell>
                   <TableCell>{entry.producer}</TableCell>
                   <TableCell>
                     <Badge variant={entry.status === 'terminee' ? 'default' : 'secondary'}>

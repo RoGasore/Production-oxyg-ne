@@ -116,6 +116,19 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
   const setTimeToNow = (field: 'startTime' | 'boosterTime' | 'endTime') => {
     form.setValue(field, new Date(), { shouldValidate: true });
   };
+  
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const timeValue = e.target.value;
+    if (timeValue) {
+      const productionDate = form.getValues('productionDate');
+      const newDate = new Date(productionDate);
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      newDate.setHours(hours, minutes, 0, 0);
+      field.onChange(newDate);
+    } else {
+      field.onChange(null);
+    }
+  };
 
   const handleSubmit = (data: FormValues) => {
     const finalData = {
@@ -148,6 +161,8 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
   
   const isOpen = mode !== null;
   const isUpdate = mode === 'update';
+  const formatForTimeInput = (date: Date | null) => date ? date.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '';
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -162,19 +177,19 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
             {/* --- Champs toujours visibles ou remplis --- */}
             {isUpdate && entry ? <InfoField label="Date de production" value={formatDate(entry.productionDate)} /> : <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>}
             {isUpdate && entry ? <InfoField label="Producteur" value={entry.producer} /> : <FormField control={form.control} name="producer" render={({ field }) => (<FormItem><FormLabel>Produit par</FormLabel><FormControl><Input placeholder="Nom du producteur" {...field} /></FormControl><FormMessage /></FormItem> )}/>}
-            {isUpdate && entry ? <InfoField label="Source d'énergie" value={entry.source} /> : <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>}
+            {isUpdate && entry ? <InfoField label="Source d'énergie" value={entry.source.toUpperCase()} /> : <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>}
             {sourceValue === 'autre' && !isUpdate && (<FormField control={form.control} name="sourceOther" render={({ field }) => (<FormItem><FormLabel>Précisez la source</FormLabel><FormControl><Input placeholder="Source libre" {...field} /></FormControl><FormMessage /></FormItem>)}/> )}
             
             {/* --- Champs à remplir progressivement --- */}
-            {isUpdate && entry?.startTime ? <InfoField label="Heure d'allumage usine" value={formatTime(entry.startTime)} /> : <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Heure d'allumage de l'usine</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="text" value={field.value ? field.value.toLocaleTimeString('fr-FR') : ''} readOnly placeholder="Cliquez sur l'horloge" /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('startTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+            {isUpdate && entry?.startTime ? <InfoField label="Heure d'allumage usine" value={formatTime(entry.startTime)} /> : <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Heure d'allumage de l'usine</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('startTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
 
             {isUpdate && (
                 <>
-                    {entry?.boosterTime ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="text" value={field.value ? field.value.toLocaleTimeString('fr-FR') : ''} readOnly placeholder="Cliquez sur l'horloge" /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+                    {entry?.boosterTime ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    {entry?.endTime ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="text" value={field.value ? field.value.toLocaleTimeString('fr-FR') : ''} readOnly placeholder="Cliquez sur l'horloge" /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
+                    {entry?.endTime ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles produites</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} /></FormControl><FormMessage /></FormItem> )}/>
+                    <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Nombre de bouteilles produites</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
                 </>
             )}
