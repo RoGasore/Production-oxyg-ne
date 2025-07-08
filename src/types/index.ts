@@ -3,7 +3,7 @@ export interface ProductionEntry {
     id: string;
     productionDate: Date;
     startTime: Date;
-    boosterTime: Date;
+    boosterTime: Date | null;
     endTime: Date | null;
     duration: string;
     source: string;

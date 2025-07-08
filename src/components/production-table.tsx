@@ -17,10 +17,10 @@ import { formatTime, formatDate } from '@/lib/utils';
 
 interface ProductionTableProps {
   entries: ProductionEntry[];
-  onCompleteClick: (entry: ProductionEntry) => void;
+  onUpdateClick: (entry: ProductionEntry) => void;
 }
 
-export function ProductionTable({ entries, onCompleteClick }: ProductionTableProps) {
+export function ProductionTable({ entries, onUpdateClick }: ProductionTableProps) {
   if (entries.length === 0) {
     return (
         <Card>
@@ -71,7 +71,7 @@ export function ProductionTable({ entries, onCompleteClick }: ProductionTablePro
                   </TableCell>
                   <TableCell className="text-right">
                     {entry.status === 'en-cours' && (
-                      <Button variant="outline" size="sm" onClick={() => onCompleteClick(entry)}>Compléter</Button>
+                      <Button variant="outline" size="sm" onClick={() => onUpdateClick(entry)}>Compléter</Button>
                     )}
                   </TableCell>
                 </TableRow>

@@ -10,17 +10,16 @@ import NotificationScheduler from '@/components/notification-scheduler';
 import { formatDuration } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const [entries, setEntries] = useState<ProductionEntry[]>([]);
-  const [dialogState, setDialogState] = useState<{mode: 'create' | 'complete' | null, entry?: ProductionEntry}>({ mode: null });
-  const { toast } = useToast();
+  const [dialogState, setDialogState] = useState<{mode: 'create' | 'update' | null, entry?: ProductionEntry}>({ mode: null });
 
-  const addEntry = (data: Omit<ProductionEntry, 'id' | 'status' | 'endTime' | 'duration' | 'bottlesProduced' | 'observations'>) => {
+  const addEntry = (data: Pick<ProductionEntry, 'productionDate' | 'startTime' | 'source' | 'producer'>) => {
     const newEntry: ProductionEntry = {
       ...data,
       id: Date.now().toString(),
+      boosterTime: null,
       endTime: null,
       duration: 'En cours',
       bottlesProduced: 0,
@@ -30,17 +29,18 @@ export default function Home() {
     setEntries(prevEntries => [newEntry, ...prevEntries].sort((a, b) => b.productionDate.getTime() - a.productionDate.getTime()));
   };
   
-  const updateEntry = (id: string, data: Pick<ProductionEntry, 'endTime' | 'bottlesProduced' | 'observations'>) => {
+  const updateEntry = (id: string, data: Partial<Omit<ProductionEntry, 'id'>>) => {
     setEntries(prevEntries =>
       prevEntries.map(entry => {
-        if (entry.id === id && data.endTime) {
-          const durationMs = data.endTime.getTime() - entry.startTime.getTime();
-          return {
-            ...entry,
-            ...data,
-            status: 'terminee',
-            duration: formatDuration(durationMs),
-          };
+        if (entry.id === id) {
+          const updatedEntry = { ...entry, ...data };
+
+          if (updatedEntry.endTime) {
+            const durationMs = updatedEntry.endTime.getTime() - updatedEntry.startTime.getTime();
+            updatedEntry.duration = formatDuration(durationMs);
+            updatedEntry.status = 'terminee';
+          }
+          return updatedEntry;
         }
         return entry;
       })
@@ -63,7 +63,7 @@ export default function Home() {
                 Nouvelle entrée
             </Button>
         </div>
-        <ProductionTable entries={entries} onCompleteClick={(entry) => setDialogState({ mode: 'complete', entry })} />
+        <ProductionTable entries={entries} onUpdateClick={(entry) => setDialogState({ mode: 'update', entry })} />
       </main>
       <ProductionDialog
         mode={dialogState.mode}
