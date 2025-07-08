@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, CalendarIcon, CheckCircle } from 'lucide-react';
+import { Clock, CalendarIcon } from 'lucide-react';
 import { cn, formatTime, formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -44,9 +44,28 @@ interface ProductionDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+);
+
+
 const InfoField = ({ label, value }: { label: string; value: string }) => (
     <div className="flex items-center gap-2 text-sm">
-        <CheckCircle className="h-5 w-5 text-green-600" />
+        <CheckCircleIcon className="h-5 w-5 text-green-600" />
         <div>
             <span className="font-medium text-gray-800">{label}:</span>
             <span className="ml-2 text-gray-600">{value}</span>
