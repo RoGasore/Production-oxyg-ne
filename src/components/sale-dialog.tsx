@@ -15,9 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { cn, formatDate } from '@/lib/utils';
 import type { SaleEntry } from '@/types';
 import { useSettings } from '@/hooks/use-settings';
 
@@ -79,6 +77,7 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
     } else if (mode === 'update' && entry) {
       form.reset({
         ...entry,
+        saleDate: new Date(entry.saleDate),
         ourBottlesCount: entry.ourBottlesCount || 0,
         clientBottlesCount: entry.clientBottlesCount || 0
       });
@@ -133,7 +132,7 @@ export function SaleDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChang
                 </FormControl><FormMessage /></FormItem>
             )}/>
             
-            <FormField control={form.control} name="saleDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de vente</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(new Date(field.value), "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
+            <FormField control={form.control} name="saleDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de vente</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? formatDate(field.value) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
 
             <FormField control={form.control} name="clientName" render={({ field }) => (<FormItem><FormLabel>Nom de {clientType === 'hopital' ? "l'hôpital" : "l'entreprise"}</FormLabel><FormControl><Input placeholder={clientType === 'hopital' ? "ex: Hôpital Général" : "ex: Mining Corp"} {...field} /></FormControl><FormMessage /></FormItem> )}/>
             

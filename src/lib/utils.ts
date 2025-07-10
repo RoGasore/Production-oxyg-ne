@@ -1,6 +1,7 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { format as formatDateFns } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -18,12 +19,16 @@ export function formatDuration(milliseconds: number) {
   return `${hours}h ${minutes}m`;
 }
 
-export function formatTime(date: Date | null) {
+export function formatTime(date: Date | null | undefined) {
     if (!date) return '-';
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    // Ensure date is a Date object
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return formatDateFns(dateObj, 'HH:mm', { locale: fr });
 }
 
-export function formatDate(date: Date | null) {
+export function formatDate(date: Date | null | undefined) {
     if (!date) return '-';
-    return date.toLocaleDateString('fr-FR');
+    // Ensure date is a Date object
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return formatDateFns(dateObj, 'P', { locale: fr });
 }

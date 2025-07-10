@@ -19,7 +19,7 @@ import { Clock, CalendarIcon } from 'lucide-react';
 import { cn, formatTime, formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { ProductionEntry, SaleEntry, SaleClientType } from '@/types';
+import type { ProductionEntry, SaleEntry } from '@/types';
 import { useSettings } from '@/hooks/use-settings';
 import useLocalStorage from '@/hooks/use-local-storage';
 
@@ -75,15 +75,19 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-const InfoField = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex items-center gap-2 text-sm">
-        <CheckCircleIcon className="h-5 w-5 text-green-600" />
-        <div>
-            <span className="font-medium text-gray-800">{label}:</span>
-            <span className="ml-2 text-gray-600">{value}</span>
+const InfoField = ({ label, value }: { label: string; value: string | null | undefined}) => {
+    if (!value) return null;
+    return (
+        <div className="flex items-center gap-2 text-sm">
+            <CheckCircleIcon className="h-5 w-5 text-green-600" />
+            <div>
+                <span className="font-medium text-gray-800">{label}:</span>
+                <span className="ml-2 text-gray-600">{value}</span>
+            </div>
         </div>
-    </div>
-);
+    );
+};
+
 
 export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: ProductionDialogProps) {
   const { toast } = useToast();
@@ -127,6 +131,10 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
     } else if (mode === 'update' && entry) {
       form.reset({
         ...entry,
+        productionDate: new Date(entry.productionDate),
+        startTime: new Date(entry.startTime),
+        boosterTime: entry.boosterTime ? new Date(entry.boosterTime) : null,
+        endTime: entry.endTime ? new Date(entry.endTime) : null,
         source: ['snel', 'groupe', 'socodee'].includes(entry.source) ? entry.source : 'autre',
         sourceOther: ['snel', 'groupe', 'socodee'].includes(entry.source) ? '' : entry.source,
         bottlesProduced: entry.bottlesProduced || 0,
@@ -238,7 +246,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
             
             {isFullEdit || !isUpdate ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(new Date(field.value), "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
+                    <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? formatDate(field.value) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="producer" render={({ field }) => (<FormItem><FormLabel>Produit par</FormLabel><FormControl><Input placeholder="Nom du producteur" {...field} /></FormControl><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>
                     {sourceValue === 'autre' && (<FormField control={form.control} name="sourceOther" render={({ field }) => (<FormItem><FormLabel>Précisez la source</FormLabel><FormControl><Input placeholder="Source libre" {...field} /></FormControl><FormMessage /></FormItem>)}/> )}
@@ -246,10 +254,10 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border p-4 rounded-lg">
-                  {entry?.productionDate && <InfoField label="Date de production" value={formatDate(entry.productionDate)} />}
-                  {entry?.producer && <InfoField label="Producteur" value={entry.producer} />}
-                  {entry?.source && <InfoField label="Source d'énergie" value={entry.source.toUpperCase()} />}
-                  {entry?.startTime && <InfoField label="Heure d'allumage" value={formatTime(entry.startTime)} />}
+                  <InfoField label="Date de production" value={formatDate(entry?.productionDate)} />
+                  <InfoField label="Producteur" value={entry?.producer} />
+                  <InfoField label="Source d'énergie" value={entry?.source.toUpperCase()} />
+                  <InfoField label="Heure d'allumage" value={formatTime(entry?.startTime)} />
                 </div>
             )}
 
