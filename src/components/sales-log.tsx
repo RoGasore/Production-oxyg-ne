@@ -7,7 +7,6 @@ import { SalesTable } from '@/components/sales-table';
 import { SaleDialog } from '@/components/sale-dialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import useLocalStorage from '@/hooks/use-local-storage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +19,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useData } from '@/components/data-sync-provider';
+import { db } from '@/lib/firebase';
+import { doc, writeBatch } from 'firebase/firestore';
 
 
 export default function SalesLog() {
-  const [entries, setEntries] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
+  const { saleEntries, setSaleEntries } = useData();
   const [dialogState, setDialogState] = useState<{mode: 'create' | 'update' | null, entry?: SaleEntry}>({ mode: null });
   const [entryToDelete, setEntryToDelete] = useState<SaleEntry | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
@@ -31,19 +33,17 @@ export default function SalesLog() {
 
   const addEntry = (data: Omit<SaleEntry, 'id'>) => {
     const newEntry: SaleEntry = { ...data, id: Date.now().toString(), status: 'pending' };
-    const sortedEntries = [...entries, newEntry].sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
-    setEntries(sortedEntries);
+    setSaleEntries(prev => [...prev, newEntry]);
   };
   
   const updateEntry = (id: string, data: Partial<Omit<SaleEntry, 'id'>>) => {
-    setEntries(prevEntries =>
+    setSaleEntries(prevEntries =>
       prevEntries.map(entry => entry.id === id ? { ...entry, ...data } : entry)
-      .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
     );
   };
   
   const toggleSaleStatus = (id: string) => {
-    setEntries(prevEntries =>
+    setSaleEntries(prevEntries =>
       prevEntries.map(entry => {
         if (entry.id === id) {
           toast({ title: 'Statut mis à jour', description: 'La vente a été marquée comme récupérée.' });
@@ -54,19 +54,35 @@ export default function SalesLog() {
     );
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
-    setEntryToDelete(null);
-    toast({
-        title: "Suppression réussie",
-        description: "La vente a été supprimée.",
-    });
+  const deleteEntry = async (id: string) => {
+    setSaleEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+    
+    const batch = writeBatch(db);
+    const docRef = doc(db, 'sales', id);
+    batch.delete(docRef);
+
+    try {
+        await batch.commit();
+        setEntryToDelete(null);
+        toast({
+            title: "Suppression réussie",
+            description: "La vente a été supprimée.",
+        });
+    } catch(e) {
+        console.error("Error deleting document: ", e);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "La suppression a échoué. Veuillez réessayer.",
+        });
+        setSaleEntries(saleEntries);
+    }
   };
 
   const filteredEntries = useMemo(() => {
-    if (filter === 'all') return entries;
-    return entries.filter(entry => entry.status === filter);
-  }, [entries, filter]);
+    if (filter === 'all') return saleEntries;
+    return saleEntries.filter(entry => entry.status === filter);
+  }, [saleEntries, filter]);
 
   return (
     <div className="flex flex-1 flex-col gap-4">

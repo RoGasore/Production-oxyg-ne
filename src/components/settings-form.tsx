@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import useLocalStorage from '@/hooks/use-local-storage';
 import { useSettings } from '@/hooks/use-settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,22 +19,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useData } from '@/components/data-sync-provider';
 
 function ClientNameManager() {
-    const [sales, setSales] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
-    const [productions, setProductions] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
+    const { saleEntries, setSaleEntries, productionEntries, setProductionEntries } = useData();
     const [editingName, setEditingName] = useState<string | null>(null);
     const [newName, setNewName] = useState('');
     const { toast } = useToast();
 
     const clientNames = useMemo(() => {
-        const salesNames = sales.map(s => s.clientName);
-        const productionNames = productions
+        const salesNames = saleEntries.map(s => s.clientName);
+        const productionNames = productionEntries
             .filter(p => p.otherClientName)
             .map(p => p.otherClientName as string);
         const allNames = [...salesNames, ...productionNames];
         return [...new Set(allNames)].sort((a, b) => a.localeCompare(b));
-    }, [sales, productions]);
+    }, [saleEntries, productionEntries]);
 
     const handleEditClick = (name: string) => {
         setEditingName(name);
@@ -54,11 +53,8 @@ function ClientNameManager() {
             return;
         }
 
-        const updatedSales = sales.map(s => s.clientName === oldName ? { ...s, clientName: trimmedNewName } : s);
-        setSales(updatedSales);
-
-        const updatedProductions = productions.map(p => p.otherClientName === oldName ? { ...p, otherClientName: trimmedNewName } : p);
-        setProductions(updatedProductions);
+        setSaleEntries(sales => sales.map(s => s.clientName === oldName ? { ...s, clientName: trimmedNewName } : s));
+        setProductionEntries(productions => productions.map(p => p.otherClientName === oldName ? { ...p, otherClientName: trimmedNewName } : p));
 
         toast({ title: 'Succès', description: `Le client '${oldName}' a été renommé en '${trimmedNewName}'.` });
         setEditingName(null);

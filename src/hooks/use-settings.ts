@@ -1,21 +1,11 @@
-import useLocalStorage from './use-local-storage';
+import { useData } from '@/components/data-sync-provider';
 
 export interface AppSettings {
   defaultProducer: string;
   companyName: string;
 }
 
-const defaultSettings: AppSettings = {
-  defaultProducer: 'Rodrigue Gasore',
-  companyName: 'OxyTrack',
-};
-
 export function useSettings() {
-  const [settings, setSettings] = useLocalStorage<AppSettings>('oxytrack-settings', defaultSettings);
-
-  const updateSettings = (newSettings: Partial<AppSettings>) => {
-    setSettings(prev => ({...prev, ...newSettings}));
-  }
-
+  const { settings, updateSettings } = useData();
   return { settings, updateSettings };
 }

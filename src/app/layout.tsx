@@ -2,7 +2,7 @@ import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import PwaInstaller from '@/components/pwa-installer';
-import { app, analytics } from '@/lib/firebase'; // Import Firebase
+import { DataSyncProvider } from '@/components/data-sync-provider';
 
 export const metadata: Metadata = {
   title: 'OxyTrack',
@@ -28,7 +28,9 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <DataSyncProvider>
+            {children}
+        </DataSyncProvider>
         <Toaster />
         <PwaInstaller />
       </body>

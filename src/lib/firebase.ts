@@ -1,6 +1,8 @@
+
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
+import { getFirestore, initializeFirestore, memoryLocalCache, persistentLocalCache } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -15,7 +17,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export { app, analytics };
+// Initialize Firestore with offline persistence
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({})
+});
+
+const analytics = isAnalyticsSupported().then(yes => yes ? getAnalytics(app) : null);
+
+export { app, db, analytics };

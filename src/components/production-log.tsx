@@ -7,7 +7,6 @@ import { ProductionTable } from '@/components/production-table';
 import { ProductionDialog } from '@/components/production-dialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import useLocalStorage from '@/hooks/use-local-storage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +19,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { formatDuration } from '@/lib/utils';
+import { useData } from '@/components/data-sync-provider';
+import { doc, writeBatch } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 export default function ProductionLog() {
-  const [entries, setEntries] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
+  const { productionEntries, setProductionEntries } = useData();
   const [dialogState, setDialogState] = useState<{mode: 'create' | 'update' | null, entry?: ProductionEntry}>({ mode: null });
   const [entryToDelete, setEntryToDelete] = useState<ProductionEntry | null>(null);
   const { toast } = useToast();
@@ -43,12 +45,11 @@ export default function ProductionLog() {
       otherClientName: null,
       otherClientBottlesCount: null,
     };
-    const sortedEntries = [...entries, newEntry].sort((a, b) => new Date(b.productionDate).getTime() - new Date(a.productionDate).getTime());
-    setEntries(sortedEntries);
+    setProductionEntries(prev => [...prev, newEntry]);
   };
   
   const updateEntry = (id: string, data: Partial<Omit<ProductionEntry, 'id'>>) => {
-    setEntries(prevEntries =>
+    setProductionEntries(prevEntries =>
       prevEntries.map(entry => {
         if (entry.id === id) {
           const updatedEntry = { ...entry, ...data };
@@ -61,17 +62,34 @@ export default function ProductionLog() {
           return updatedEntry;
         }
         return entry;
-      }).sort((a, b) => new Date(b.productionDate).getTime() - new Date(a.productionDate).getTime())
+      })
     );
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
-    setEntryToDelete(null);
-    toast({
-        title: "Suppression réussie",
-        description: "La fiche de production a été supprimée.",
-    });
+  const deleteEntry = async (id: string) => {
+    setProductionEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+    
+    const batch = writeBatch(db);
+    const docRef = doc(db, 'productions', id);
+    batch.delete(docRef);
+    
+    try {
+        await batch.commit();
+        setEntryToDelete(null);
+        toast({
+            title: "Suppression réussie",
+            description: "La fiche de production a été supprimée.",
+        });
+    } catch(e) {
+        console.error("Error deleting document: ", e);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "La suppression a échoué. Veuillez réessayer.",
+        });
+        // Re-add the entry if deletion fails
+        setProductionEntries(productionEntries);
+    }
   };
 
   return (
@@ -84,7 +102,7 @@ export default function ProductionLog() {
             </Button>
         </div>
         <ProductionTable 
-            entries={entries} 
+            entries={productionEntries} 
             onUpdateClick={(entry) => setDialogState({ mode: 'update', entry })}
             onDeleteClick={(entry) => setEntryToDelete(entry)}
         />

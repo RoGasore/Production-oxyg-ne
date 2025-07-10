@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import { useSettings } from '@/hooks/use-settings';
-import useLocalStorage from '@/hooks/use-local-storage';
+import { useData } from '@/components/data-sync-provider';
 
 const productionSchema = z.object({
   productionDate: z.date({ required_error: "La date de production est requise." }),
@@ -92,7 +92,7 @@ const InfoField = ({ label, value }: { label: string; value: string | null | und
 export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpenChange }: ProductionDialogProps) {
   const { toast } = useToast();
   const { settings } = useSettings();
-  const [, setSales] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
+  const { setSaleEntries } = useData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(productionSchema),
@@ -213,7 +213,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
                 bottleNumbers: '',
                 status: 'pending'
             };
-            setSales(prevSales => [...prevSales, newSale].sort((a,b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime()));
+            setSaleEntries(prevSales => [...prevSales, newSale]);
             toast({
                 title: 'Mise à jour et Vente Créée',
                 description: `La fiche de production est à jour et une vente a été créée pour ${newSale.clientName}.`,

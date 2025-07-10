@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import useLocalStorage from '@/hooks/use-local-storage';
 import type { ProductionEntry } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,11 +10,12 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } fro
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { getMonth, getYear, format, eachMonthOfInterval, startOfYear, endOfYear, isSameMonth, getDate, parse } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useData } from '@/components/data-sync-provider';
 
 type Metric = 'bottles' | 'hours' | 'pressure';
 
 export default function StatisticsPage() {
-    const [productionEntries] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
+    const { productionEntries } = useData();
     const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
     const [metric, setMetric] = useState<Metric>('bottles');
 

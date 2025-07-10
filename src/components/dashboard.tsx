@@ -3,7 +3,6 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import useLocalStorage from '@/hooks/use-local-storage';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import StatsCard from '@/components/stats-card';
 import { Package, Clock, ShoppingCart, Truck, Gauge, BarChartIcon } from 'lucide-react';
@@ -19,13 +18,13 @@ import {
   Legend,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, getMonth, getYear, getDate, startOfMonth, endOfMonth, isWithinInterval, isSameMonth } from 'date-fns';
+import { format, getMonth, getYear, getDate, startOfMonth, endOfMonth, isWithinInterval, isSameMonth, parse } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ExportModule from '@/components/export-module';
+import { useData } from '@/components/data-sync-provider';
 
 export default function Dashboard() {
-  const [productionEntries] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
-  const [saleEntries] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
+  const { productionEntries, saleEntries } = useData();
 
   const stats = useMemo(() => {
     const completedProductions = productionEntries.filter(p => p.status === 'terminee');
@@ -226,7 +225,7 @@ export default function Dashboard() {
             </CardFooter>
          </Card>
       </div>
-      <ExportModule productionEntries={productionEntries} saleEntries={saleEntries} />
+      <ExportModule />
     </div>
   );
 }

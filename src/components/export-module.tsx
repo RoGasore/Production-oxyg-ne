@@ -1,22 +1,18 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { ProductionEntry, SaleEntry } from '@/types';
 import { getMonth, getYear, format, eachMonthOfInterval, startOfYear, endOfYear } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useData } from '@/components/data-sync-provider';
 
-interface ExportModuleProps {
-    productionEntries: ProductionEntry[];
-    saleEntries: SaleEntry[];
-}
-
-export default function ExportModule({ productionEntries, saleEntries }: ExportModuleProps) {
+export default function ExportModule() {
+    const { productionEntries, saleEntries } = useData();
     const { toast } = useToast();
     const currentMonthKey = `${getYear(new Date())}-${getMonth(new Date())}`;
     const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthKey);
