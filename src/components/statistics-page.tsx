@@ -6,7 +6,7 @@ import type { ProductionEntry } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { getMonth, getYear, format, eachMonthOfInterval, startOfYear, endOfYear, isSameMonth, getDate, parse } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -113,11 +113,10 @@ export default function StatisticsPage() {
             <CardContent className="pl-2">
                  <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
                     <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
+                        <BarChart data={chartData} margin={{ top: 20, right: 10, bottom: 20, left: -20 }}>
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} label={{ value: "Jour du mois", position: "insideBottom", offset: -10 }} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} label={{ value: currentMetricLabel, angle: -90, position: 'insideLeft', offset: 10 }}/>
                             <Tooltip content={<ChartTooltipContent />} />
-                            <Legend />
                             <Bar dataKey={currentMetricKey} name={currentMetricLabel} fill={currentMetricColor} radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
