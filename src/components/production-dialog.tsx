@@ -228,66 +228,67 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-xl md:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4 md:gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2 md:pr-4">
             
             {isFullEdit || !isUpdate ? (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="productionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Date de production</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(new Date(field.value), "PPP", { locale: fr }) : <span>Choisissez une date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="producer" render={({ field }) => (<FormItem><FormLabel>Produit par</FormLabel><FormControl><Input placeholder="Nom du producteur" {...field} /></FormControl><FormMessage /></FormItem> )}/>
                     <FormField control={form.control} name="source" render={({ field }) => (<FormItem><FormLabel>Source d'énergie</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez une source" /></SelectTrigger></FormControl><SelectContent><SelectItem value="groupe">Groupe</SelectItem><SelectItem value="snel">SNEL</SelectItem><SelectItem value="socodee">Socodee</SelectItem><SelectItem value="autre">Autre</SelectItem></SelectContent></Select><FormMessage /></FormItem> )}/>
                     {sourceValue === 'autre' && (<FormField control={form.control} name="sourceOther" render={({ field }) => (<FormItem><FormLabel>Précisez la source</FormLabel><FormControl><Input placeholder="Source libre" {...field} /></FormControl><FormMessage /></FormItem>)}/> )}
                     <FormField control={form.control} name="startTime" render={({ field }) => (<FormItem><FormLabel>Heure d'allumage de l'usine</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('startTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>
-                </>
+                </div>
             ) : (
-                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border p-4 rounded-lg">
                   {entry?.productionDate && <InfoField label="Date de production" value={formatDate(entry.productionDate)} />}
                   {entry?.producer && <InfoField label="Producteur" value={entry.producer} />}
                   {entry?.source && <InfoField label="Source d'énergie" value={entry.source.toUpperCase()} />}
-                  {entry?.startTime && <InfoField label="Heure d'allumage usine" value={formatTime(entry.startTime)} />}
-                </>
+                  {entry?.startTime && <InfoField label="Heure d'allumage" value={formatTime(entry.startTime)} />}
+                </div>
             )}
 
             {isUpdate && (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {entry?.boosterTime && !isFullEdit ? <InfoField label="Heure début booster" value={formatTime(entry.boosterTime)} /> : <FormField control={form.control} name="boosterTime" render={({ field }) => (<FormItem><FormLabel>Heure de début booster</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('boosterTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
                     {entry?.endTime && !isFullEdit ? <InfoField label="Heure de fin" value={formatTime(entry.endTime)} /> : <FormField control={form.control} name="endTime" render={({ field }) => (<FormItem><FormLabel>Heure de fin</FormLabel><div className="flex items-center gap-2"><FormControl><Input type="time" value={formatForTimeInput(field.value)} onChange={(e) => handleTimeChange(e, field)} /></FormControl><Button type="button" variant="outline" size="icon" onClick={() => setTimeToNow('endTime')}><Clock className="h-4 w-4" /></Button></div><FormMessage /></FormItem> )}/>}
                     
-                    {entry?.status === 'terminee' || isFullEdit ? (
+                    {(entry?.status === 'terminee' || isFullEdit) && (
                         <>
                          <FormField
                             control={form.control} name="bottleDestination" render={({ field }) => (
-                                <FormItem className="space-y-3"><FormLabel>Destination des bouteilles</FormLabel>
+                                <FormItem className="space-y-3 md:col-span-2"><FormLabel>Destination des bouteilles</FormLabel>
                                 <FormControl>
-                                    <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex items-center space-x-4">
+                                    <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
                                         <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="hopital" /></FormControl><FormLabel className="font-normal">Hôpital uniquement</FormLabel></FormItem>
                                         <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="hopital-entreprises" /></FormControl><FormLabel className="font-normal">Hôpital et Entreprises</FormLabel></FormItem>
                                     </RadioGroup>
                                 </FormControl><FormMessage /></FormItem>
                          )}/>
 
-                          <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Bouteilles produites (pour hôpital)</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
+                          <FormField control={form.control} name="bottlesProduced" render={({ field }) => (<FormItem><FormLabel>Bouteilles produites (Hôpital)</FormLabel><FormControl><Input type="number" placeholder="ex: 50" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
 
-                          {bottleDestination === 'hopital-entreprises' && (
+                          {bottleDestination === 'hopital-entreprises' ? (
                             <>
                                 <FormField control={form.control} name="otherClientName" render={({ field }) => (<FormItem><FormLabel>Nom de l'entreprise</FormLabel><FormControl><Input placeholder="ex: Socodee" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem> )}/>
-                                <FormField control={form.control} name="otherClientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Bouteilles (pour entreprise)</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
+                                <FormField control={form.control} name="otherClientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Bouteilles (Entreprise)</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
                             </>
-                          )}
-                           <FormField control={form.control} name="pressure" render={({ field }) => (<FormItem><FormLabel>Pression moyenne (bars)</FormLabel><FormControl><Input type="number" placeholder="ex: 180" {...field} value={field.value ?? 180} min="0" /></FormControl><FormDescription>Pression de remplissage des bouteilles (180-200 bars).</FormDescription><FormMessage /></FormItem> )}/>
-                          <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
+                          ) : <div className="hidden md:block"></div>}
+                           <FormField control={form.control} name="pressure" render={({ field }) => (<FormItem><FormLabel>Pression moyenne (bars)</FormLabel><FormControl><Input type="number" placeholder="ex: 180" {...field} value={field.value ?? 180} min="0" step="0.1" /></FormControl><FormDescription>Pression de remplissage (180-200 bars).</FormDescription><FormMessage /></FormItem> )}/>
+                          <FormField control={form.control} name="observations" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
                         </>
-                    ) : null}
-                </>
+                    )}
+                </div>
             )}
 
             <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
                 <Button type="submit">Enregistrer</Button>
             </DialogFooter>
           </form>

@@ -41,12 +41,12 @@ export function SalesTable({ entries, onUpdateClick, onDeleteClick, onToggleStat
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Réceptionnaire</TableHead>
+                <TableHead className="min-w-[100px]">Date</TableHead>
+                <TableHead className="min-w-[150px]">Client</TableHead>
+                <TableHead className="min-w-[150px]">Réceptionnaire</TableHead>
                 <TableHead>Bouteilles ({settings.companyName})</TableHead>
                 <TableHead>Bouteilles Client</TableHead>
-                <TableHead>N° Bouteilles ({settings.companyName})</TableHead>
+                <TableHead className="min-w-[150px]">N° Bouteilles ({settings.companyName})</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>

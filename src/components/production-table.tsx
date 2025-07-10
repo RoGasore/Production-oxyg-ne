@@ -66,7 +66,7 @@ export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: Produ
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
+                <TableHead className="min-w-[100px]">Date</TableHead>
                 <TableHead>Début Usine</TableHead>
                 <TableHead>Début Booster</TableHead>
                 <TableHead>Fin</TableHead>
