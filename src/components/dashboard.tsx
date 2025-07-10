@@ -2,11 +2,13 @@
 "use client";
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import useLocalStorage from '@/hooks/use-local-storage';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import StatsCard from '@/components/stats-card';
-import { Package, Clock, ShoppingCart, Truck, Gauge } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Package, Clock, ShoppingCart, Truck, Gauge, BarChartIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Bar,
   BarChart,
@@ -17,7 +19,7 @@ import {
   Legend,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, getMonth, getYear } from 'date-fns';
+import { format, getMonth, getYear, getDate, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ExportModule from '@/components/export-module';
 
@@ -62,34 +64,29 @@ export default function Dashboard() {
     };
   }, [productionEntries, saleEntries]);
   
-  const productionByMonth = useMemo(() => {
-    const monthlyData: { [key: string]: { year: number; month: number; Hôpital: number; Entreprises: number } } = {};
-    const completedProductions = productionEntries.filter(p => p.status === 'terminee');
+  const productionForCurrentMonth = useMemo(() => {
+    const dailyData: { [key: number]: { Hôpital: number; Entreprises: number } } = {};
+    const now = new Date();
+    const currentMonthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
 
-    completedProductions.forEach(entry => {
-        const date = new Date(entry.productionDate);
-        const year = getYear(date);
-        const month = getMonth(date); // 0-11
-        const key = `${year}-${month}`;
+    const completedProductionsThisMonth = productionEntries.filter(p => 
+        p.status === 'terminee' && isWithinInterval(new Date(p.productionDate), currentMonthInterval)
+    );
 
-        if (!monthlyData[key]) {
-            monthlyData[key] = { year, month, Hôpital: 0, Entreprises: 0 };
+    completedProductionsThisMonth.forEach(entry => {
+        const day = getDate(new Date(entry.productionDate));
+        if (!dailyData[day]) {
+            dailyData[day] = { Hôpital: 0, Entreprises: 0 };
         }
-        monthlyData[key].Hôpital += entry.bottlesProduced || 0;
-        monthlyData[key].Entreprises += entry.otherClientBottlesCount || 0;
+        dailyData[day].Hôpital += entry.bottlesProduced || 0;
+        dailyData[day].Entreprises += entry.otherClientBottlesCount || 0;
     });
 
-    return Object.values(monthlyData)
-        .sort((a, b) => {
-            if (a.year !== b.year) return a.year - b.year;
-            return a.month - b.month;
-        })
-        .slice(-6)
-        .map(data => ({
-            name: format(new Date(data.year, data.month), 'MMM', { locale: fr }),
-            Hôpital: data.Hôpital,
-            Entreprises: data.Entreprises,
-        }));
+    return Object.entries(dailyData).map(([day, data]) => ({
+        name: day, // Just the day number
+        Hôpital: data.Hôpital,
+        Entreprises: data.Entreprises,
+    })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
   }, [productionEntries]);
 
 
@@ -141,13 +138,13 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-1">
          <Card>
             <CardHeader>
-                <CardTitle>Production mensuelle (6 derniers mois)</CardTitle>
+                <CardTitle>Production de {format(new Date(), 'MMMM yyyy', { locale: fr })}</CardTitle>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={productionByMonth} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
-                            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                        <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+                            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} label={{ value: "Jour du mois", position: "insideBottom", offset: -5 }} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                             <Tooltip content={<ChartTooltipContent />} />
                             <Legend />
@@ -157,6 +154,14 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
+            <CardFooter className="flex-row-reverse">
+                <Link href="/stats" passHref>
+                    <Button>
+                        <BarChartIcon className="mr-2 h-4 w-4"/>
+                        Voir les statistiques
+                    </Button>
+                </Link>
+            </CardFooter>
          </Card>
       </div>
       <ExportModule productionEntries={productionEntries} saleEntries={saleEntries} />
