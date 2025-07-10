@@ -6,11 +6,12 @@ import type { ProductionEntry } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { getMonth, getYear, format, eachMonthOfInterval, startOfYear, endOfYear, isSameMonth, getDate, parse } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useData } from '@/components/data-sync-provider';
+import { Label } from '@/components/ui/label';
 
 type Metric = 'bottles' | 'hours' | 'pressure';
 
@@ -83,31 +84,39 @@ export default function StatisticsPage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Analyse de la Production</CardTitle>
-                <CardDescription>
-                    Sélectionnez un mois et une métrique pour visualiser les données de production détaillées.
-                </CardDescription>
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                        <SelectTrigger className="w-full sm:w-[200px]">
-                            <SelectValue placeholder="Sélectionnez un mois" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {availableMonths.map(month => (
-                                <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                     <Select value={metric} onValueChange={(val) => setMetric(val as Metric)}>
-                        <SelectTrigger className="w-full sm:w-[200px]">
-                            <SelectValue placeholder="Sélectionnez une métrique" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="bottles">Nombre de bouteilles</SelectItem>
-                            <SelectItem value="hours">Heures de production</SelectItem>
-                            <SelectItem value="pressure">Pression moyenne</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="space-y-1.5">
+                    <CardTitle>Analyse de la Production</CardTitle>
+                    <CardDescription>
+                        Sélectionnez un mois et une métrique pour visualiser les données de production détaillées.
+                    </CardDescription>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 items-end gap-4 pt-6">
+                    <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="month-select">Mois</Label>
+                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                            <SelectTrigger id="month-select">
+                                <SelectValue placeholder="Sélectionnez un mois" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableMonths.map(month => (
+                                    <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="metric-select">Métrique</Label>
+                        <Select value={metric} onValueChange={(val) => setMetric(val as Metric)}>
+                            <SelectTrigger id="metric-select">
+                                <SelectValue placeholder="Sélectionnez une métrique" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="bottles">Nombre de bouteilles</SelectItem>
+                                <SelectItem value="hours">Heures de production</SelectItem>
+                                <SelectItem value="pressure">Pression moyenne</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="pl-2">
