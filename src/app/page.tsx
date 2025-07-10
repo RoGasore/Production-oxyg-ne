@@ -29,11 +29,13 @@ export default function Home() {
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-full sm:w-auto md:w-[600px]">
-            <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
-            <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="sales">Ventes</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center">
+            <TabsList>
+              <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
+              <TabsTrigger value="production">Production</TabsTrigger>
+              <TabsTrigger value="sales">Ventes</TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="dashboard" className="mt-4">
             <Dashboard />
           </TabsContent>
