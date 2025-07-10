@@ -36,8 +36,12 @@ export default function ProductionLog() {
       endTime: null,
       duration: 'En cours',
       bottlesProduced: 0,
+      pressure: null,
       observations: '',
       status: 'en-cours',
+      bottleDestination: null,
+      otherClientName: null,
+      otherClientBottlesCount: null,
     };
     const sortedEntries = [...entries, newEntry].sort((a, b) => new Date(b.productionDate).getTime() - new Date(a.productionDate).getTime());
     setEntries(sortedEntries);

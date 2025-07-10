@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,6 +32,7 @@ const productionSchema = z.object({
   boosterTime: z.date().optional().nullable(),
   endTime: z.date().optional().nullable(),
   bottlesProduced: z.coerce.number().optional().nullable(),
+  pressure: z.coerce.number().optional().nullable(),
   observations: z.string().optional().nullable(),
   bottleDestination: z.enum(['hopital', 'hopital-entreprises']).optional().nullable(),
   otherClientName: z.string().optional().nullable(),
@@ -99,6 +100,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
       boosterTime: null,
       endTime: null,
       bottlesProduced: 0,
+      pressure: 180,
       bottleDestination: 'hopital',
       otherClientName: '',
       otherClientBottlesCount: 0
@@ -116,6 +118,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
         boosterTime: null,
         endTime: null,
         bottlesProduced: 0,
+        pressure: 180,
         observations: "RAS",
         bottleDestination: 'hopital',
         otherClientName: '',
@@ -127,6 +130,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
         source: ['snel', 'groupe', 'socodee'].includes(entry.source) ? entry.source : 'autre',
         sourceOther: ['snel', 'groupe', 'socodee'].includes(entry.source) ? '' : entry.source,
         bottlesProduced: entry.bottlesProduced || 0,
+        pressure: entry.pressure || 180,
         observations: entry.observations || 'RAS',
         bottleDestination: entry.bottleDestination || 'hopital',
         otherClientName: entry.otherClientName || '',
@@ -276,6 +280,7 @@ export function ProductionDialog({ mode, entry, onAddEntry, onUpdateEntry, onOpe
                                 <FormField control={form.control} name="otherClientBottlesCount" render={({ field }) => (<FormItem><FormLabel>Bouteilles (pour entreprise)</FormLabel><FormControl><Input type="number" placeholder="ex: 10" {...field} value={field.value ?? 0} min="0" /></FormControl><FormMessage /></FormItem> )}/>
                             </>
                           )}
+                           <FormField control={form.control} name="pressure" render={({ field }) => (<FormItem><FormLabel>Pression moyenne (bars)</FormLabel><FormControl><Input type="number" placeholder="ex: 180" {...field} value={field.value ?? 180} min="0" /></FormControl><FormDescription>Pression de remplissage des bouteilles (180-200 bars).</FormDescription><FormMessage /></FormItem> )}/>
                           <FormField control={form.control} name="observations" render={({ field }) => (<FormItem><FormLabel>Observations</FormLabel><FormControl><Textarea placeholder="RAS ou ajoutez une observation..." {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)}/>
                         </>
                     ) : null}

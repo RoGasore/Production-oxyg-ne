@@ -8,6 +8,7 @@ export interface ProductionEntry {
     duration: string;
     source: string;
     bottlesProduced: number;
+    pressure: number | null;
     producer: string;
     observations: string;
     status: 'en-cours' | 'terminee';

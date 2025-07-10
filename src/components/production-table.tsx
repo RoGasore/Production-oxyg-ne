@@ -72,6 +72,7 @@ export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: Produ
                 <TableHead>Fin</TableHead>
                 <TableHead>Durée</TableHead>
                 <TableHead>Bouteilles</TableHead>
+                <TableHead>Pression</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Producteur</TableHead>
                 <TableHead>Statut</TableHead>
@@ -87,6 +88,7 @@ export function ProductionTable({ entries, onUpdateClick, onDeleteClick }: Produ
                   <TableCell>{formatTime(entry.endTime)}</TableCell>
                   <TableCell>{entry.duration}</TableCell>
                   <TableCell>{formatBottles(entry)}</TableCell>
+                  <TableCell>{entry.pressure ? `${entry.pressure} bar` : '-'}</TableCell>
                   <TableCell>{entry.source.toUpperCase()}</TableCell>
                   <TableCell>{entry.producer}</TableCell>
                   <TableCell>

@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import StatsCard from '@/components/stats-card';
-import { Package, Clock, ShoppingCart, Truck } from 'lucide-react';
+import { Package, Clock, ShoppingCart, Truck, Gauge } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Bar,
@@ -19,6 +19,7 @@ import {
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, getMonth, getYear } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import ExportModule from '@/components/export-module';
 
 export default function Dashboard() {
   const [productionEntries] = useLocalStorage<ProductionEntry[]>('oxytrack-entries', []);
@@ -38,8 +39,13 @@ export default function Dashboard() {
         }
         return acc;
     }, 0);
-
     const totalProductionHours = Math.floor(totalProductionMillis / (1000 * 60 * 60));
+    
+    const productionsWithPressure = completedProductions.filter(p => p.pressure && p.pressure > 0);
+    const averagePressure = productionsWithPressure.length > 0 
+      ? productionsWithPressure.reduce((acc, entry) => acc + (entry.pressure || 0), 0) / productionsWithPressure.length
+      : 0;
+
 
     const totalOurBottlesSold = saleEntries.reduce((acc, entry) => {
       return acc + (entry.ourBottlesCount || 0);
@@ -50,6 +56,7 @@ export default function Dashboard() {
     return {
       totalBottlesProduced,
       totalProductionHours,
+      averagePressure,
       totalOurBottlesSold,
       pendingRecoveries,
     };
@@ -99,7 +106,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Bouteilles produites (Total)"
           value={stats.totalBottlesProduced.toString()}
@@ -111,6 +118,12 @@ export default function Dashboard() {
           value={`${stats.totalProductionHours}h`}
           icon={Clock}
           description="Total des durées de production"
+        />
+        <StatsCard
+          title="Pression Moyenne"
+          value={`${stats.averagePressure.toFixed(1)} bar`}
+          icon={Gauge}
+          description="Moyenne sur productions terminées"
         />
         <StatsCard
           title="Nos bouteilles vendues"
@@ -146,6 +159,7 @@ export default function Dashboard() {
             </CardContent>
          </Card>
       </div>
+      <ExportModule productionEntries={productionEntries} saleEntries={saleEntries} />
     </div>
   );
 }
