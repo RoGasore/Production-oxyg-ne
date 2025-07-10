@@ -1,7 +1,7 @@
 
 {
   "hosting": {
-    "source": ".",
+    "site": "oxygen-c1775",
     "ignore": [
       "firebase.json",
       "**/.*",
