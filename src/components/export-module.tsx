@@ -65,23 +65,24 @@ export default function ExportModule() {
         let finalY = 0;
 
         // --- PDF Header ---
-        doc.setFillColor(4, 120, 87); // Teal color from template
-        doc.rect(0, 0, doc.internal.pageSize.getWidth(), 40, 'F');
-        doc.setFontSize(22);
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.text("Rapport d'Activité Mensuel", 14, 25);
+        doc.setFillColor(248, 250, 252); // Light gray background from template
+        doc.rect(0, 0, doc.internal.pageSize.getWidth(), 25, 'F');
         
-        doc.setFontSize(12);
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 55, 72); // Dark text color
+        doc.text("Rapport Mensuel d'Activité", 14, 18);
+        
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 116, 139); // Gray
-        doc.text(settings.companyName, 14, 50);
-        doc.text(monthName, doc.internal.pageSize.getWidth() - 14, 50, { align: 'right' });
+        doc.text(`${settings.companyName} - ${monthName}`, doc.internal.pageSize.getWidth() - 14, 18, { align: 'right' });
         doc.setLineWidth(0.5);
         doc.setDrawColor(226, 232, 240); // Lighter gray for line
-        doc.line(14, 55, doc.internal.pageSize.getWidth() - 14, 55);
+        doc.line(0, 25, doc.internal.pageSize.getWidth(), 25);
+        
+        finalY = 40;
 
-        finalY = 65;
 
         // --- Summary Stats ---
         const totalBottlesProduced = productionsInMonth.reduce((acc, entry) => acc + (entry.bottlesProduced || 0) + (entry.otherClientBottlesCount || 0), 0);
@@ -100,7 +101,7 @@ export default function ExportModule() {
             { title: "Bouteilles produites", value: totalBottlesProduced.toString(), color: [5, 150, 105] },
             { title: "Heures de production", value: `${totalProductionHours}h`, color: [37, 99, 235] },
             { title: "Pression moyenne", value: `${averagePressure.toFixed(1)} bar`, color: [217, 70, 239] },
-            { title: "Bouteilles vendues", value: totalBottlesSold.toString(), color: [249, 115, 22] },
+            { title: "Nos bouteilles vendues", value: totalBottlesSold.toString(), color: [249, 115, 22] },
         ];
         
         doc.setFontSize(14);
@@ -109,11 +110,13 @@ export default function ExportModule() {
         doc.text("Résumé du mois", 14, finalY);
         finalY += 8;
 
+        const cardWidth = (doc.internal.pageSize.getWidth() - 28 - (3*5)) / 4; // 28 for padding, 3*5 for gaps
+
         summaryStats.forEach((stat, index) => {
-            const x = 14 + (index * 48);
-            doc.setFillColor(241, 245, 249); // Light gray background for cards
-            doc.roundedRect(x, finalY, 45, 25, 3, 3, 'F');
-            doc.setFontSize(10);
+            const x = 14 + (index * (cardWidth + 5));
+            doc.setFillColor(248, 250, 252); // Light gray background for cards
+            doc.roundedRect(x, finalY, cardWidth, 25, 3, 3, 'F');
+            doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(100, 116, 139);
             doc.text(stat.title, x + 5, finalY + 8);
@@ -146,7 +149,7 @@ export default function ExportModule() {
                     p.producer
                 ]),
                 theme: 'grid',
-                headStyles: { fillColor: [4, 120, 87] }, // Teal color
+                headStyles: { fillColor: [48, 102, 190] }, // Primary Blue
                 didDrawPage: (data) => { finalY = data.cursor?.y || finalY; }
             });
              finalY = (doc as any).lastAutoTable.finalY + 15;
@@ -175,7 +178,7 @@ export default function ExportModule() {
                     s.status === 'completed' ? 'Récupérée' : 'En attente'
                 ]),
                 theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235] }, // Blue color
+                headStyles: { fillColor: [229, 74, 7] }, // Accent Orange
                 didDrawPage: (data) => { finalY = data.cursor?.y || finalY; }
             });
         }
@@ -186,7 +189,7 @@ export default function ExportModule() {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text(`Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+            doc.text(`Généré par OxyTrack - Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
         
         const fileName = `Rapport_OxyTrack_${format(monthDate, 'MMMM_yyyy', { locale: fr })}.pdf`;
