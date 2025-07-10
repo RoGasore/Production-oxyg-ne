@@ -19,7 +19,7 @@ import {
   Legend,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, getMonth, getYear, getDate, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, getMonth, getYear, getDate, startOfMonth, endOfMonth, isWithinInterval, isSameMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ExportModule from '@/components/export-module';
 
@@ -64,8 +64,7 @@ export default function Dashboard() {
     };
   }, [productionEntries, saleEntries]);
   
-  const productionForCurrentMonth = useMemo(() => {
-    const dailyData: { [key: number]: { Hôpital: number; Entreprises: number } } = {};
+  const { monthlyStats, productionForCurrentMonth } = useMemo(() => {
     const now = new Date();
     const currentMonthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
 
@@ -73,6 +72,30 @@ export default function Dashboard() {
         p.status === 'terminee' && isWithinInterval(new Date(p.productionDate), currentMonthInterval)
     );
 
+    const bottlesProducedThisMonth = completedProductionsThisMonth.reduce((acc, entry) => {
+      return acc + (entry.bottlesProduced || 0) + (entry.otherClientBottlesCount || 0);
+    }, 0);
+
+    const productionMillisThisMonth = completedProductionsThisMonth.reduce((acc, entry) => {
+        if (entry.startTime && entry.endTime) {
+            const duration = new Date(entry.endTime).getTime() - new Date(entry.startTime).getTime();
+            return acc + duration;
+        }
+        return acc;
+    }, 0);
+    const productionHoursThisMonth = Math.floor(productionMillisThisMonth / (1000 * 60 * 60));
+
+    const productionsWithPressureThisMonth = completedProductionsThisMonth.filter(p => p.pressure && p.pressure > 0);
+    const averagePressureThisMonth = productionsWithPressureThisMonth.length > 0 
+      ? productionsWithPressureThisMonth.reduce((acc, entry) => acc + (entry.pressure || 0), 0) / productionsWithPressureThisMonth.length
+      : 0;
+    
+    const salesThisMonth = saleEntries.filter(s => isSameMonth(new Date(s.saleDate), now));
+    const bottlesSoldThisMonth = salesThisMonth.reduce((acc, entry) => {
+        return acc + (entry.ourBottlesCount || 0);
+    }, 0);
+    
+    const dailyData: { [key: number]: { Hôpital: number; Entreprises: number } } = {};
     completedProductionsThisMonth.forEach(entry => {
         const day = getDate(new Date(entry.productionDate));
         if (!dailyData[day]) {
@@ -82,12 +105,22 @@ export default function Dashboard() {
         dailyData[day].Entreprises += entry.otherClientBottlesCount || 0;
     });
 
-    return Object.entries(dailyData).map(([day, data]) => ({
-        name: day, // Just the day number
+    const chartData = Object.entries(dailyData).map(([day, data]) => ({
+        name: day,
         Hôpital: data.Hôpital,
         Entreprises: data.Entreprises,
     })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
-  }, [productionEntries]);
+
+    return {
+      monthlyStats: {
+        bottlesProducedThisMonth,
+        productionHoursThisMonth,
+        averagePressureThisMonth,
+        bottlesSoldThisMonth,
+      },
+      productionForCurrentMonth: chartData
+    };
+  }, [productionEntries, saleEntries]);
 
 
   const chartConfig = {
@@ -138,12 +171,38 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-1">
          <Card>
             <CardHeader>
-                <CardTitle>Production de {format(new Date(), 'MMMM yyyy', { locale: fr })}</CardTitle>
+                <CardTitle>Rapport du mois de {format(new Date(), 'MMMM yyyy', { locale: fr })}</CardTitle>
                  <CardDescription>
-                    Aperçu de la production par jour pour le mois en cours.
+                    Aperçu de la production et des ventes pour le mois en cours.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <StatsCard
+                        title="Bouteilles produites"
+                        value={monthlyStats.bottlesProducedThisMonth.toString()}
+                        icon={Package}
+                        description="Ce mois-ci"
+                    />
+                     <StatsCard
+                        title="Heures de production"
+                        value={`${monthlyStats.productionHoursThisMonth}h`}
+                        icon={Clock}
+                        description="Ce mois-ci"
+                    />
+                    <StatsCard
+                        title="Pression moyenne"
+                        value={`${monthlyStats.averagePressureThisMonth.toFixed(1)} bar`}
+                        icon={Gauge}
+                        description="Ce mois-ci"
+                    />
+                    <StatsCard
+                        title="Bouteilles vendues"
+                        value={monthlyStats.bottlesSoldThisMonth.toString()}
+                        icon={ShoppingCart}
+                        description="Ce mois-ci"
+                    />
+                </div>
                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 10, bottom: 5, left: -20 }}>
