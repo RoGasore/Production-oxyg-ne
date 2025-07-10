@@ -91,7 +91,7 @@ export default function StatisticsPage() {
                     </CardDescription>
                 </div>
                 <div className="flex justify-center pt-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 items-end gap-4 w-full max-w-md">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 items-end gap-4 w-full sm:max-w-md">
                         <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="month-select" className="text-left">Mois</Label>
                             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
