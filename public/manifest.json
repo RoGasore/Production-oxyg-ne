@@ -1,0 +1,16 @@
+{
+  "name": "OxyTrack",
+  "short_name": "OxyTrack",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#3066BE",
+  "description": "Application pour le suivi de la production d'oxygène.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
