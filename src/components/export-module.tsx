@@ -192,7 +192,7 @@ export default function ExportModule() {
             doc.text(`Généré par OxyTrack - Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
         
-        const fileName = `Rapport_OxyTrack_${format(monthDate, 'MMMM_yyyy', { locale: fr })}.pdf`;
+        const fileName = `Rapport - production d'oxygène _${format(monthDate, 'MMMM_yyyy', { locale: fr })}.pdf`;
         doc.save(fileName);
         
         toast({
