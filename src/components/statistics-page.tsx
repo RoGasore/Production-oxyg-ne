@@ -84,38 +84,40 @@ export default function StatisticsPage() {
     return (
         <Card>
             <CardHeader>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 text-center">
                     <CardTitle>Analyse de la Production</CardTitle>
                     <CardDescription>
                         Sélectionnez un mois et une métrique pour visualiser les données de production détaillées.
                     </CardDescription>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 items-end gap-4 pt-6">
-                    <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="month-select">Mois</Label>
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger id="month-select">
-                                <SelectValue placeholder="Sélectionnez un mois" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {availableMonths.map(month => (
-                                    <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="metric-select">Métrique</Label>
-                        <Select value={metric} onValueChange={(val) => setMetric(val as Metric)}>
-                            <SelectTrigger id="metric-select">
-                                <SelectValue placeholder="Sélectionnez une métrique" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="bottles">Nombre de bouteilles</SelectItem>
-                                <SelectItem value="hours">Heures de production</SelectItem>
-                                <SelectItem value="pressure">Pression moyenne</SelectItem>
-                            </SelectContent>
-                        </Select>
+                <div className="flex justify-center pt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 items-end gap-4 w-full max-w-md">
+                        <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="month-select" className="text-left">Mois</Label>
+                            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                <SelectTrigger id="month-select">
+                                    <SelectValue placeholder="Sélectionnez un mois" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableMonths.map(month => (
+                                        <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="metric-select" className="text-left">Métrique</Label>
+                            <Select value={metric} onValueChange={(val) => setMetric(val as Metric)}>
+                                <SelectTrigger id="metric-select">
+                                    <SelectValue placeholder="Sélectionnez une métrique" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="bottles">Nombre de bouteilles</SelectItem>
+                                    <SelectItem value="hours">Heures de production</SelectItem>
+                                    <SelectItem value="pressure">Pression moyenne</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
             </CardHeader>
