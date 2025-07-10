@@ -143,10 +143,10 @@ export default function Dashboard() {
                     Aperçu de la production par jour pour le mois en cours.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="pl-2">
+            <CardContent>
                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 10, bottom: 5, left: -20 }}>
+                        <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 30, bottom: 5, left: 0 }}>
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} label={{ value: "Jour du mois", position: "insideBottom", offset: -5 }} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} width={30} />
                             <Tooltip content={<ChartTooltipContent />} />
