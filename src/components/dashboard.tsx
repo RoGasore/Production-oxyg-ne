@@ -7,7 +7,7 @@ import useLocalStorage from '@/hooks/use-local-storage';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import StatsCard from '@/components/stats-card';
 import { Package, Clock, ShoppingCart, Truck, Gauge, BarChartIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Bar,
@@ -103,7 +103,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Bouteilles produites (Total)"
           value={stats.totalBottlesProduced.toString()}
@@ -139,6 +139,9 @@ export default function Dashboard() {
          <Card>
             <CardHeader>
                 <CardTitle>Production de {format(new Date(), 'MMMM yyyy', { locale: fr })}</CardTitle>
+                 <CardDescription>
+                    Aperçu de la production par jour pour le mois en cours.
+                </CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
@@ -155,12 +158,12 @@ export default function Dashboard() {
                 </ChartContainer>
             </CardContent>
             <CardFooter className="flex-row-reverse">
-                <Link href="/stats" passHref>
-                    <Button>
+                <Button asChild variant="link" className="text-sm">
+                    <Link href="/stats">
                         <BarChartIcon className="mr-2 h-4 w-4"/>
-                        Voir les statistiques
-                    </Button>
-                </Link>
+                        Voir les statistiques détaillées
+                    </Link>
+                </Button>
             </CardFooter>
          </Card>
       </div>
