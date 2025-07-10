@@ -2,6 +2,7 @@ import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import PwaInstaller from '@/components/pwa-installer';
+import { app, analytics } from '@/lib/firebase'; // Import Firebase
 
 export const metadata: Metadata = {
   title: 'OxyTrack',
