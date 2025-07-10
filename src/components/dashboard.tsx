@@ -146,9 +146,9 @@ export default function Dashboard() {
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+                        <BarChart data={productionForCurrentMonth} margin={{ top: 20, right: 10, bottom: 5, left: -10 }}>
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} label={{ value: "Jour du mois", position: "insideBottom", offset: -5 }} />
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} width={40} />
                             <Tooltip content={<ChartTooltipContent />} />
                             <Legend />
                             <Bar dataKey="Hôpital" stackId="a" fill="var(--color-Hôpital)" radius={[4, 4, 0, 0]} />
