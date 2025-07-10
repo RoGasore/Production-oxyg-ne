@@ -17,7 +17,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-4 shadow-sm sm:px-6">
         <div className="flex items-center gap-2">
             <Logo className="h-8 w-8" />
-            <h1 className="text-xl sm:text-2xl font-semibold font-headline text-primary">OxyTrack</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold font-headline text-primary">Oxygen</h1>
         </div>
         <div className="ml-auto">
             <Link href="/settings" passHref>

@@ -5,7 +5,7 @@ import PwaInstaller from '@/components/pwa-installer';
 import { DataSyncProvider } from '@/components/data-sync-provider';
 
 export const metadata: Metadata = {
-  title: 'OxyTrack',
+  title: 'Oxygen',
   description: 'Application pour le suivi de la production d\'oxygène.',
   manifest: '/manifest.json',
 };
@@ -30,9 +30,9 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <DataSyncProvider>
             {children}
+            <Toaster />
+            <PwaInstaller />
         </DataSyncProvider>
-        <Toaster />
-        <PwaInstaller />
       </body>
     </html>
   );

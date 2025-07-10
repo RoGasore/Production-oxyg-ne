@@ -189,7 +189,7 @@ export default function ExportModule() {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text(`Généré par OxyTrack - Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+            doc.text(`Généré par ${settings.companyName} - Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
         
         const fileName = `Rapport - production d'oxygène _${format(monthDate, 'MMMM_yyyy', { locale: fr })}.pdf`;

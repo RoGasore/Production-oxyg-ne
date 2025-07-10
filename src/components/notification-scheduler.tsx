@@ -45,7 +45,7 @@ const NotificationScheduler = () => {
 
       // 07:50 notification
       if (hours === 7 && minutes === 50 && !notifiedForMorning.current) {
-        new Notification('OxyTrack Rappel', {
+        new Notification('Oxygen Rappel', {
           body: "Il est l'heure de démarrer la machine. N'oubliez pas d'enregistrer l'heure de début.",
           icon: '/icon.svg'
         });
@@ -54,7 +54,7 @@ const NotificationScheduler = () => {
 
       // 15:50 notification
       if (hours === 15 && minutes === 50 && !notifiedForAfternoon.current) {
-        new Notification('OxyTrack Rappel', {
+        new Notification('Oxygen Rappel', {
           body: "La journée est bientôt finie. N'oubliez pas de compléter la fiche de production.",
           icon: '/icon.svg'
         });

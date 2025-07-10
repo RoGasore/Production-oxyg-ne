@@ -42,7 +42,7 @@ export function DataSyncProvider({ children }: { children: React.ReactNode }) {
     const [saleEntries, setSaleEntries] = useLocalStorage<SaleEntry[]>('oxytrack-sales', []);
     const [settings, setSettings] = useLocalStorage<AppSettings>('oxytrack-settings', {
         defaultProducer: 'Rodrigue Gasore',
-        companyName: 'OxyTrack',
+        companyName: 'Oxygen',
     });
     
     // Listen to online/offline status

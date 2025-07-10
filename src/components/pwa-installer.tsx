@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import { useSettings } from '@/hooks/use-settings';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
@@ -17,6 +18,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function PwaInstaller() {
   const { toast } = useToast();
+  const { settings } = useSettings();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function PwaInstaller() {
     if (outcome === 'accepted') {
       toast({
         title: "Installation réussie",
-        description: "OxyTrack a été ajouté à votre écran d'accueil.",
+        description: `${settings.companyName} a été ajouté à votre écran d'accueil.`,
       })
     }
     setInstallPrompt(null);
