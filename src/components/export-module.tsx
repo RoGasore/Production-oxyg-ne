@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download } from 'lucide-react';
+import { Download, Package, Clock, Gauge, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getMonth, getYear, format, eachMonthOfInterval, startOfYear, endOfYear, parse, isSameMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -13,9 +13,10 @@ import { useData } from '@/components/data-sync-provider';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { jsPDF as jsPDFType } from 'jspdf';
-import { formatDate, formatDuration } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import type { ProductionEntry, SaleEntry } from '@/types';
 import { useSettings } from '@/hooks/use-settings';
+import { Logo } from '@/components/logo';
 
 declare module 'jspdf' {
     interface jsPDF {
@@ -60,84 +61,132 @@ export default function ExportModule() {
         const salesInMonth = saleEntries.filter(s => isSameMonth(new Date(s.saleDate), monthDate));
 
         const doc = new jsPDF();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        let finalY = 0;
 
-        // Header
-        doc.setFontSize(18);
-        doc.text(`Rapport d'Activité - ${settings.companyName}`, 14, 22);
-        doc.setFontSize(12);
-        doc.text(`Mois: ${monthName}`, 14, 30);
-        doc.setLineWidth(0.5);
-        doc.line(14, 35, 196, 35);
+        // --- PDF Header ---
+        doc.setFillColor(4, 120, 87); // Teal color from template
+        doc.rect(0, 0, doc.internal.pageSize.getWidth(), 40, 'F');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Rapport d'Activité Mensuel", 14, 25);
         
-        // Stats
-        const completedProductions = productionsInMonth;
-        const totalBottlesProduced = completedProductions.reduce((acc, entry) => acc + (entry.bottlesProduced || 0) + (entry.otherClientBottlesCount || 0), 0);
-        const totalProductionMillis = completedProductions.reduce((acc, entry) => {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 116, 139); // Gray
+        doc.text(settings.companyName, 14, 50);
+        doc.text(monthName, doc.internal.pageSize.getWidth() - 14, 50, { align: 'right' });
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(226, 232, 240); // Lighter gray for line
+        doc.line(14, 55, doc.internal.pageSize.getWidth() - 14, 55);
+
+        finalY = 65;
+
+        // --- Summary Stats ---
+        const totalBottlesProduced = productionsInMonth.reduce((acc, entry) => acc + (entry.bottlesProduced || 0) + (entry.otherClientBottlesCount || 0), 0);
+        const totalProductionMillis = productionsInMonth.reduce((acc, entry) => {
              if (entry.startTime && entry.endTime) {
                 return acc + (new Date(entry.endTime).getTime() - new Date(entry.startTime).getTime());
              }
              return acc;
         }, 0);
         const totalProductionHours = Math.floor(totalProductionMillis / (1000 * 60 * 60));
-        const productionsWithPressure = completedProductions.filter(p => p.pressure && p.pressure > 0);
+        const productionsWithPressure = productionsInMonth.filter(p => p.pressure && p.pressure > 0);
         const averagePressure = productionsWithPressure.length > 0 ? productionsWithPressure.reduce((acc, p) => acc + (p.pressure || 0), 0) / productionsWithPressure.length : 0;
         const totalBottlesSold = salesInMonth.reduce((acc, s) => acc + s.ourBottlesCount, 0);
+        
+        const summaryStats = [
+            { title: "Bouteilles produites", value: totalBottlesProduced.toString(), color: [5, 150, 105] },
+            { title: "Heures de production", value: `${totalProductionHours}h`, color: [37, 99, 235] },
+            { title: "Pression moyenne", value: `${averagePressure.toFixed(1)} bar`, color: [217, 70, 239] },
+            { title: "Bouteilles vendues", value: totalBottlesSold.toString(), color: [249, 115, 22] },
+        ];
+        
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 55, 72);
+        doc.text("Résumé du mois", 14, finalY);
+        finalY += 8;
 
-        doc.setFontSize(10);
-        doc.text(`Bouteilles produites: ${totalBottlesProduced}`, 14, 45);
-        doc.text(`Heures de production: ${totalProductionHours}h`, 14, 50);
-        doc.text(`Pression moyenne: ${averagePressure.toFixed(1)} bar`, 90, 45);
-        doc.text(`Bouteilles vendues: ${totalBottlesSold}`, 90, 50);
+        summaryStats.forEach((stat, index) => {
+            const x = 14 + (index * 48);
+            doc.setFillColor(241, 245, 249); // Light gray background for cards
+            doc.roundedRect(x, finalY, 45, 25, 3, 3, 'F');
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(100, 116, 139);
+            doc.text(stat.title, x + 5, finalY + 8);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(stat.color[0], stat.color[1], stat.color[2]);
+            doc.text(stat.value, x + 5, finalY + 18);
+        });
 
-        // Production Table
+        finalY += 35;
+
+
+        // --- Production Table ---
         if(productionsInMonth.length > 0) {
             doc.setFontSize(14);
-            doc.text("Détails de la Production", 14, 65);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(45, 55, 72);
+            doc.text("Détails de la Production", 14, finalY);
+            finalY += 5;
+
             doc.autoTable({
-                startY: 70,
-                head: [['Date', 'Durée', 'Bouteilles', 'Pression', 'Source', 'Producteur']],
+                startY: finalY,
+                head: [['Date', 'Durée', 'Bouteilles (Total)', 'Pression', 'Source', 'Producteur']],
                 body: productionsInMonth.map(p => [
                     formatDate(p.productionDate),
                     p.duration,
                     `${(p.bottlesProduced || 0) + (p.otherClientBottlesCount || 0)}`,
-                    p.pressure ? `${p.pressure} bar` : '-',
+                    p.pressure ? `${p.pressure.toFixed(1)} bar` : '-',
                     p.source.toUpperCase(),
                     p.producer
                 ]),
                 theme: 'grid',
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [22, 163, 74] }
+                headStyles: { fillColor: [4, 120, 87] }, // Teal color
+                didDrawPage: (data) => { finalY = data.cursor?.y || finalY; }
             });
+             finalY = (doc as any).lastAutoTable.finalY + 15;
         }
         
-        // Sales Table
+        // --- Sales Table ---
         if(salesInMonth.length > 0) {
-            let finalY = (doc as any).lastAutoTable.finalY || 80;
+            if (finalY + 30 > pageHeight) { // check if new page is needed
+                doc.addPage();
+                finalY = 20;
+            }
             doc.setFontSize(14);
-            doc.text("Détails des Ventes", 14, finalY + 15);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(45, 55, 72);
+            doc.text("Détails des Ventes", 14, finalY);
+            finalY += 5;
+
             doc.autoTable({
-                startY: finalY + 20,
-                head: [['Date', 'Client', 'Réceptionnaire', `Bouteilles (${settings.companyName})`, 'Bouteilles (Client)', 'Statut']],
+                startY: finalY,
+                head: [['Date', 'Client', `Bouteilles (${settings.companyName})`, 'Bouteilles (Client)', 'Statut']],
                 body: salesInMonth.map(s => [
                     formatDate(s.saleDate),
                     s.clientName,
-                    s.recipientName || '-',
                     s.ourBottlesCount,
                     s.clientBottlesCount || '-',
                     s.status === 'completed' ? 'Récupérée' : 'En attente'
                 ]),
                 theme: 'grid',
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [37, 99, 235] }
+                headStyles: { fillColor: [37, 99, 235] }, // Blue color
+                didDrawPage: (data) => { finalY = data.cursor?.y || finalY; }
             });
         }
 
-        // Footer
+        // --- Footer ---
         const pageCount = doc.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);
-            doc.text(`Page ${i} sur ${pageCount}`, 196, 285, { align: 'right' });
+            doc.setTextColor(150);
+            doc.text(`Page ${i} sur ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
         
         const fileName = `Rapport_OxyTrack_${format(monthDate, 'MMMM_yyyy', { locale: fr })}.pdf`;
