@@ -176,7 +176,7 @@ export default function Dashboard() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <StatsCard
                         title="Bouteilles produites"
                         value={monthlyStats.bottlesProducedThisMonth.toString()}
